@@ -55,14 +55,14 @@ You should be able to run `main.jl` or your own scripts using `GenerationExpansi
 
 ## Problem Formulation
 
-$$\begin{align*}
+$$\begin{aligned}
 \text{minimize}
 && c^{\text{inv}} &+ c^{\text{op}} \\
 \text{subject to:} \\
 \text{investment cost} && c^{\text{inv}} &= \sum_{(n, g) \in NG} I_{n,g} \cdot U_{n,g} \cdot i_{n,g} \\
 \text{operational cost} && c^{\text{op}} &= \sum_{(n, g) \in NG} \sum_{t \in T} (V_{n,g} \cdot p_{n,g,t} + V^{\text{loss}} \cdot p^{\text{loss}}_{n,t}) \\
-\text{node balance} && D_{n,t} &= \sum_{g \in G: (n,g)\in NG} p_{n,g,t} + \sum_{(n^{\text{from}}, n^{\text{to}}) ∈ L : n^{\text{to}} = n} f_{n^{\text{from}}, n^{\text{to}}, t} - \sum_{(n^{\text{from}}, n^{\text{to}}) ∈ L : n^{\text{from}} = n} f_{n^{\text{from}}, n^{\text{to}}, t} + p^{\text{loss}}_{n,t} && \forall n \in N\, \forall t \in T \\
+\text{node balance} && D_{n,t} &= \sum_{g \in G: (n,g) \in NG} p_{n,g,t} + \sum_{(n^{\text{from}}, n^{\text{to}}) \in L : n^{\text{to}} = n} f_{n^{\text{from}}, n^{\text{to}}, t} - \sum_{(n^{\text{from}}, n^{\text{to}}) \in L : n^{\text{from}} = n} f_{n^{\text{from}}, n^{\text{to}}, t} + p^{\text{loss}}_{n,t} && \forall n \in N\, \forall t \in T \\
 \text{maximum capacity} && p_{n, g, t} &\leq A_{n, g, t} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \\
 \text{ramping up} && p_{n, g, t} - p_{n, g, t-1} &\leq R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{1\} \\
 \text{ramping down} && p_{n, g, t} - p_{n, g, t-1} &\geq -R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{1\} \\
-\end{align*}$$
+\end{aligned}$$
