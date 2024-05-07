@@ -60,7 +60,7 @@ $$\begin{aligned}
 && c^{\text{inv}} &+ c^{\text{op}} \\
 \text{subject to:} \\
 \text{investment cost} && c^{\text{inv}} &= \sum_{(n, g) \in NG} I_{n,g} \cdot U_{n,g} \cdot i_{n,g} \\
-\text{operational cost} && c^{\text{op}} &= \sum_{(n, g) \in NG} \sum_{t \in T} (V_{n,g} \cdot p_{n,g,t} + V^{\text{loss}} \cdot p^{\text{loss}}_{n,t}) \\
+\text{operational cost} && c^{\text{op}} &= \sum_{(n, g) \in NG} \sum_{t \in T} V_{n,g} \cdot p_{n,g,t} + \sum_{n \in N} \sum_{t \in T} V^{\text{loss}} \cdot p^{\text{loss}}_{n,t} \\
 \end{aligned}$$
 
 $$\begin{aligned}
@@ -69,6 +69,6 @@ $$\begin{aligned}
 
 $$\begin{aligned}
 \text{maximum capacity} && p_{n, g, t} &\leq A_{n, g, t} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \\
-\text{ramping up} && p_{n, g, t} - p_{n, g, t-1} &\leq R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{1\} \\
-\text{ramping down} && p_{n, g, t} - p_{n, g, t-1} &\geq -R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{1\} \\
+\text{ramping up} && p_{n, g, t} - p_{n, g, t-1} &\leq R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{ 1 \} \\
+\text{ramping down} && p_{n, g, t} - p_{n, g, t-1} &\geq -R_{n,g} \cdot U_{n,g} \cdot i_{n,g} && \forall (n, g) \in NG\, \forall t \in T \setminus \{ 1 \} \\
 \end{aligned}$$
