@@ -2,6 +2,7 @@ module GenerationExpansionPlanning
 
 using CSV
 using DataFrames
+using Statistics
 using TOML
 using JuMP
 
