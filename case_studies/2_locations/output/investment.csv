@@ -1,0 +1,7 @@
+location,technology,capacity,units
+BEL,Gas,10250.0,41
+BEL,SunPV,3650.0,73
+BEL,WindOff,1600.0,16
+BEL,WindOn,3300.0,33
+NED,SunPV,46500.0,930
+NED,WindOff,74100.0,741

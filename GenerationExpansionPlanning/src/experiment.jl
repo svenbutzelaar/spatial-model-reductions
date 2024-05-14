@@ -12,8 +12,8 @@ function run_experiment(data::ExperimentData, optimizer_factory)::ExperimentResu
     @info "performing relaxation"
     data_relaxed = relaxation_iteration(data)
     relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory)
-    upperbound = relaxed_experiment_result.total_investment_cost + relaxed_experiment_result.total_operational_cost
-    @info "relaxed result gave objective: $upperbound" 
+    lowerboundbound = relaxed_experiment_result.total_investment_cost + relaxed_experiment_result.total_operational_cost
+    @info "relaxed result gave objective: $lowerboundbound" 
 
-    return run_optimisation(data, optimizer_factory, upperbound)
+    return run_optimisation(data, optimizer_factory, lowerboundbound)
 end
