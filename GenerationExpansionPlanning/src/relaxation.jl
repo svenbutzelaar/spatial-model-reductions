@@ -14,6 +14,7 @@ end
 function merge_locations(data::ExperimentData, loactions_to_merge::Set{Symbol})::ExperimentData
     merged_location_symbol = Symbol(join(map(String, collect(loactions_to_merge)), "_"))
     set_dict = get_merged_set_dict(data, loactions_to_merge, merged_location_symbol)
+    @error set_dict
     data_dict = get_merged_data_dict(data, loactions_to_merge, merged_location_symbol)
     scalars_dict = dict("value_of_lost_load" => data.value_of_lost_load, "relaxation" => data.relaxation)
     relaxed_data = ExperimentData(Dict(
@@ -26,6 +27,7 @@ function merge_locations(data::ExperimentData, loactions_to_merge::Set{Symbol}):
 end
 
 function get_merged_set_dict(data::ExperimentData, loactions_to_merge::Set{Symbol}, merged_location_symbol::Symbol)::Dict
+    # All sets:
     N = data.locations
     G = data.generation_technologies
     NG = data.generators
@@ -76,6 +78,7 @@ end
 function get_merged_data_dict(data::ExperimentData, loactions_to_merge::Set{Symbol}, merged_location_symbol::Symbol)::Dict
     # TODO merge data
     return Dict()
+end
 
 function push_if_transmission_not_exists(L::Vector{Tuple}, a::Symbol, b::Symbol)
     if (a, b) ∉ L && (b, a) ∉ L
