@@ -1,6 +1,6 @@
-export run_experiment
+export run_optimisation
 
-function run_experiment(data::ExperimentData, optimizer_factory)::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, upperboud=nothing)::ExperimentResult
     # 1. Extract data into local variables
     @info "Reading the sets"
     N = data.locations
@@ -91,6 +91,11 @@ function run_experiment(data::ExperimentData, optimizer_factory)::ExperimentResu
             # Ramping down
             @constraint(model, ramping[n, g, t] ≥ -ramping_rate[n, g] * investment_MW[n, g])
         end
+
+        if upperboud != nothing
+            @info "Setting upper bound"
+            set_optimizer_attribute(model, "Cutoff", upperboud)
+        end 
 
         # 5. Solve the model
         @info "Solving the model"
