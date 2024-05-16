@@ -27,7 +27,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
     @error data_dict
 
-    relaxed_data = ExperimentData(Dict{Symbol, Any}(
+    relaxed_data = ExperimentData(Dict(
         :sets => set_dict,
         :data => data_dict,
     ))
@@ -66,11 +66,11 @@ function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbo
     NG = collect(NG_prime_set)
 
     return Dict(
-        "time_steps" => T,
-        "locations" => N,
-        "transmission_lines" => L,
-        "generators" => NG,
-        "generation_technologies" => G,
+        :time_steps => T,
+        :locations => N,
+        :transmission_lines => L,
+        :generators => NG,
+        :generation_technologies => G,
     )
 end
 
@@ -78,9 +78,9 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
     D = data.demand
     A = data.generation_availability
     G = data.generation
-    T = data.transmission_capacities
+    T = data.transmission_lines
 
-    D_prime = DataFrame(cluster = Symbol[], time_step = Int64[], demand = Float64[])
+    D_prime = DataFrame(location = Symbol[], time_step = Int64[], demand = Float64[])
     A_prime = DataFrame(location = Symbol[], technology = Symbol[], time_step = Int64[], availability = Float64[])
     G_prime = DataFrame(technology = Symbol[], location = Symbol[], investment_cost = Float64[], variable_cost = Float64[], unit_capacity = Int64[], ramping_rate = Float64[])
     T_prime = DataFrame(from = Symbol[], to = Symbol[], export_capacity = Float64[], import_capacity = Float64[])
@@ -121,11 +121,11 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
     T = T_prime
 
     return Dict(
-        "demand" => D, 
-        "generation_availability" => A,
-        "generation" => G,
-        "transmission_capacities" => T,
-        "scalars" => DataFrame(Dict("value_of_lost_load" => data.value_of_lost_load, "relaxation" => data.relaxation)),
+        :demand => D, 
+        :generation_availability => A,
+        :generation => G,
+        :transmission_lines => T,
+        :scalars => Dict(:value_of_lost_load => data.value_of_lost_load, :relaxation => data.relaxation),
     )
 end
 
