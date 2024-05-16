@@ -1,12 +1,51 @@
 export relaxation_iteration
 
 function relaxation_iteration(data::ExperimentData)::ExperimentData
-    clusters = create_clusters(data)
+    # Create k clusters
+    k = 1
+    clusters = create_clusters(data, k)
     return merge_within_clusters(data, clusters)
 end
 
-function create_clusters(data::ExperimentData)::Vector{Set{Symbol}}
-    return [Set([:NED, :BEL])]
+function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
+    edges = []
+    capacities = []
+    location_indices = Dict(location => i for (i, location) ∈ enumerate(data.locations))
+
+    for line in eachrow(data.transmission_capacities)
+        source = location_indices[line.from]
+        dest = location_indices[line.to]
+        capacity = mean([line.export_capacity, line.import_capacity])  # Use average capacity from both ways
+        push!(edges, (source, dest))
+        push!(capacities, capacity)
+    end
+
+    # Create a distance matrix where the distance is inversely related to capacity
+    n = length(data.locations)
+    dist_matrix = fill(Inf, n, n)
+
+    for (i, edge) in enumerate(edges)
+        source, dest = edge
+        dist = 1 / capacities[i]
+        dist_matrix[source, dest] = dist
+        dist_matrix[dest, source] = dist  # Assuming undirected graph
+    end 
+
+    # Perform hierarchical clustering using single linkage
+    dendogram = hclust(dist_matrix, linkage=:single)
+    
+    # Cut the dendogram to obtain k clusters
+    cluster_assignments = cutree(dendogram, k=k)
+    clusters = [Set{Symbol}() for _ ∈ 1:k]
+    indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
+
+    for (i, assignment) ∈ enumerate(cluster_assignments)
+        push!(clusters[assignment], indices_location[i])
+    end
+
+    print("created clusters: $clusters")
+
+    return clusters
 end
 
 function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol}})::ExperimentData
