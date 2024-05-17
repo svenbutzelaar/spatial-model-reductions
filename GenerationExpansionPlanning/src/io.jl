@@ -3,7 +3,7 @@ export read_config, dataframe_to_dict, jump_variable_to_df, save_result
 """
     keys_to_symbols(dict::AbstractDict{String,Any}; recursive::Bool=true)::Dict{Symbol,Any}
 
-Create a new dictionary that is identical to `dict`, except all of the keys 
+Create a new dictionary that is identicals to `dict`, except all of the keys 
 are converted from strings to
 [symbols](https://docs.julialang.org/en/v1/manual/metaprogramming/#Symbols).
 Symbols are [interned](https://en.wikipedia.org/wiki/String_interning) and are
@@ -162,9 +162,9 @@ function save_result(result::ExperimentResult, config::Dict{Symbol,Any})
     save_dataframe(result.loss_of_load, config[:loss_of_load])
 
     scalar_data = Dict(
-        "total_investment_cost" => result.total_investment_cost,
-        "total_operational_cost" => result.total_operational_cost,
-        "runtime" => result.runtime,
+        :total_investment_cost => result.total_investment_cost,
+        :total_operational_cost => result.total_operational_cost,
+        :runtime => result.runtime,s
     )
     fname = (dir, config[:scalars]) |> joinpath
     open(fname, "w") do io

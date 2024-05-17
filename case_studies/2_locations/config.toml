@@ -8,7 +8,7 @@ transmission_lines = "transmission_lines.csv"
 scalars = "scalars.toml"
 
 [input.sets]
-time_steps = [1,2,3,4,5,6,7,8,9,10]
+time_steps = [1,2,3,4,5]
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
