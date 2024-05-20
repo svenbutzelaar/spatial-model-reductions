@@ -2,7 +2,7 @@ export relaxation_iteration
 
 function relaxation_iteration(data::ExperimentData)::ExperimentData
     # Create k clusters
-    k = 1
+    k = 2
     clusters = create_clusters(data, k)
     return merge_within_clusters(data, clusters)
 end
@@ -43,7 +43,7 @@ function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
         push!(clusters[assignment], indices_location[i])
     end
 
-    print("created clusters: $clusters")
+    println("created clusters: $clusters")
 
     return clusters
 end
@@ -62,9 +62,11 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     
     # Get aggregated set and data dicts
     set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
-    @error set_dict
+    # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
-    @error data_dict
+    # @info data_dict
+
+    @info "Dataframes of clusters merged"
 
     relaxed_data = ExperimentData(Dict(
         :sets => set_dict,
@@ -117,7 +119,7 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
     D = data.demand
     A = data.generation_availability
     G = data.generation
-    T = data.transmission_lines
+    T = data.transmission_capacities
 
     D_prime = DataFrame(location = Symbol[], time_step = Int64[], demand = Float64[])
     A_prime = DataFrame(location = Symbol[], technology = Symbol[], time_step = Int64[], availability = Float64[])
@@ -144,13 +146,14 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
         for group ∈ groupby(cluster_df, [:technology])
             push!(G_prime, (group[1, :technology], cluster_symbol, mean(group[:, :investment_cost]), mean(group[:, :variable_cost]), mean(group[:, :unit_capacity]), mean(group[:, :ramping_rate])))
         end
+    end
 
-        # Sum the export_capacity and import_capacity between every pair of clusters
-        for i ∈ 1:(length(clusters)-1)
-            for j ∈ (i+1):length(clusters)
-                cluster_df = filter(row -> (row.from ∈ clusters[i] ⩓ row.to ∈ clusters[j]) ⩔ (row.from ∈ clusters[j] ⩓ row.to ∈ clusters[i]), T)
-                push!(T_prime, (cluster_symbols[i], cluster_symbols[j], sum(cluster_df[:, :export_capacity]), sum(cluster_df[:, :import_capacity])))
-            end
+    # Sum the export_capacity and import_capacity between every pair of clusters
+    for i ∈ 1:(length(clusters)-1)
+        for j ∈ (i+1):length(clusters)
+            @info i, j
+            cluster_df = filter(row -> (row.from ∈ clusters[i] && row.to ∈ clusters[j]) || (row.from ∈ clusters[j] && row.to ∈ clusters[i]), T)
+            push!(T_prime, (cluster_symbols[i], cluster_symbols[j], sum(cluster_df[:, :export_capacity]), sum(cluster_df[:, :import_capacity])))
         end
     end
 

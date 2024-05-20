@@ -3,7 +3,7 @@ using Gurobi
 
 # Step 1: Read the experiment config
 @info "Reading the config"
-# config_path = "case_studies/2_locations/config.toml"
+# config_path = "case_studies/stylized_EU/config.toml"
 config_path = "case_studies/2_locations/config.toml"
 config = read_config(config_path)
 
