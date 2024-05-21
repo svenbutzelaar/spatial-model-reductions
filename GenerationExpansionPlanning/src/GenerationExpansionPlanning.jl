@@ -4,6 +4,7 @@ using CSV
 using DataFrames
 using Statistics
 using Clustering
+using StatsPlots
 using TOML
 using JuMP
 

@@ -38,6 +38,9 @@ function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
 
     # Perform hierarchical clustering using single linkage
     dendogram = hclust(dist_matrix, linkage=:single)
+
+    p = plot_dendrogram(dendogram)
+    savefig(p, "dendrogram.pdf")
     
     # Cut the dendogram to obtain k clusters
     cluster_assignments = cutree(dendogram, k=k)
