@@ -95,6 +95,7 @@ function read_config(config_path::AbstractString)::Dict{Symbol,Any}
     end
 
     config[:output][:dir] = (config_dir, config[:output][:dir]) |> joinpath |> abspath
+    config[:line_capacities_bidirectional] = data_config[:line_capacities_bidirectional]
 
     return config
 end
@@ -164,10 +165,25 @@ function save_result(result::ExperimentResult, config::Dict{Symbol,Any})
     scalar_data = Dict(
         :total_investment_cost => result.total_investment_cost,
         :total_operational_cost => result.total_operational_cost,
-        :runtime => result.runtime,s
+        :runtime => result.runtime,
     )
     fname = (dir, config[:scalars]) |> joinpath
     open(fname, "w") do io
         TOML.print(io, scalar_data)
     end
+end
+
+function store_relaxed_data(data::ExperimentData)
+    dir = "inputs"
+    mkpath(dir)
+
+    function save_dataframe(df::AbstractDataFrame, file::String)
+        full_path = (dir, file) |> joinpath
+        CSV.write(full_path, df)
+    end
+
+    save_dataframe(data.demand, "relaxed_demand.csv")
+    save_dataframe(data.generation_availability, "relaxed_generation_availability.csv")
+    save_dataframe(data.generation, "relaxed_generation.csv")
+    save_dataframe(data.transmission_capacities, "relaxed_transmission_capacities.csv")
 end

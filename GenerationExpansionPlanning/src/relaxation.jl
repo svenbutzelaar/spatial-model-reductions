@@ -1,10 +1,14 @@
 export relaxation_iteration
 
-function relaxation_iteration(data::ExperimentData)::ExperimentData
+"""
+    relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
+
+    Create clusters and returns merged Dataframes
+"""
+function relaxation_iteration(data::ExperimentData, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    k = 1
     clusters = create_clusters(data, k)
-    return merge_within_clusters(data, clusters)
+    return (merge_within_clusters(data, clusters), clusters)
 end
 
 function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
@@ -15,7 +19,8 @@ function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
     for line in eachrow(data.transmission_capacities)
         source = location_indices[line.from]
         dest = location_indices[line.to]
-        capacity = mean([line.export_capacity, line.import_capacity])  # Use average capacity from both ways
+        # capacity = mean([line.export_capacity, line.import_capacity])  # Use average capacity from both ways
+        capacity = line.capacity
         push!(edges, (source, dest))
         push!(capacities, capacity)
     end
@@ -43,7 +48,7 @@ function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
         push!(clusters[assignment], indices_location[i])
     end
 
-    print("created clusters: $clusters")
+    println("created clusters: $clusters")
 
     return clusters
 end
@@ -61,20 +66,24 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     end
     
     # Get aggregated set and data dicts
-    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
-    @error set_dict
+    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict, clusters)
+    # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
-    @error data_dict
+    # @info data_dict
+    scalars_dict = Dict(:value_of_lost_load => data.value_of_lost_load, :relaxation => data.relaxation)
+
+    @info "Dataframes of clusters merged"
 
     relaxed_data = ExperimentData(Dict(
         :sets => set_dict,
         :data => data_dict,
+        :scalars => scalars_dict
     ))
 
     return relaxed_data
 end
 
-function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol})::Dict
+function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol}, clusters::Vector{Set{Symbol}})::Dict
     # All sets:
     N = data.locations
     G = data.generation_technologies
@@ -87,12 +96,14 @@ function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbo
 
     # Transmission lines between clusters
     L_prime = Vector{Tuple}()
+
+
     for (a, b) ∈ L
         a_cluster = symbol_cluster_dict[a]
         b_cluster = symbol_cluster_dict[b]
 
         if a_cluster != b_cluster
-            push_if_transmission_not_exists(L_prime, a_cluster, b_cluster)
+            push!(L_prime, (a_cluster, b_cluster))
         end
     end
     L = L_prime
@@ -117,12 +128,13 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
     D = data.demand
     A = data.generation_availability
     G = data.generation
-    T = data.transmission_lines
+    T = data.transmission_capacities
 
     D_prime = DataFrame(location = Symbol[], time_step = Int64[], demand = Float64[])
     A_prime = DataFrame(location = Symbol[], technology = Symbol[], time_step = Int64[], availability = Float64[])
     G_prime = DataFrame(technology = Symbol[], location = Symbol[], investment_cost = Float64[], variable_cost = Float64[], unit_capacity = Int64[], ramping_rate = Float64[])
-    T_prime = DataFrame(from = Symbol[], to = Symbol[], export_capacity = Float64[], import_capacity = Float64[])
+    # T_prime = DataFrame(from = Symbol[], to = Symbol[], export_capacity = Float64[], import_capacity = Float64[])
+    T_prime = DataFrame(from = Symbol[], to = Symbol[], capacity = Float64[])
     
     for (index, cluster) ∈ enumerate(clusters)
         cluster_symbol = cluster_symbols[index]
@@ -144,12 +156,14 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
         for group ∈ groupby(cluster_df, [:technology])
             push!(G_prime, (group[1, :technology], cluster_symbol, mean(group[:, :investment_cost]), mean(group[:, :variable_cost]), mean(group[:, :unit_capacity]), mean(group[:, :ramping_rate])))
         end
+    end
 
-        # Sum the export_capacity and import_capacity between every pair of clusters
-        for i ∈ 1:(length(clusters)-1)
-            for j ∈ (i+1):length(clusters)
-                cluster_df = filter(row -> (row.from ∈ clusters[i] ⩓ row.to ∈ clusters[j]) ⩔ (row.from ∈ clusters[j] ⩓ row.to ∈ clusters[i]), T)
-                push!(T_prime, (cluster_symbols[i], cluster_symbols[j], sum(cluster_df[:, :export_capacity]), sum(cluster_df[:, :import_capacity])))
+    # Sum the export_capacity and import_capacity between every pair of clusters
+    for i ∈ 1:(length(clusters))
+        for j ∈ 1:(length(clusters))
+            if i != j
+                cluster_df = filter(row -> (row.from ∈ clusters[i] && row.to ∈ clusters[j]), T)
+                push!(T_prime, (cluster_symbols[i], cluster_symbols[j], sum(cluster_df[:, :capacity])))
             end
         end
     end
@@ -168,8 +182,3 @@ function get_merged_data_dict(data::ExperimentData, clusters::Vector{Set{Symbol}
     )
 end
 
-function push_if_transmission_not_exists(L::Vector{Tuple}, a::Symbol, b::Symbol)
-    if (a, b) ∉ L && (b, a) ∉ L
-        push!(L, (a, b))
-    end
-end
