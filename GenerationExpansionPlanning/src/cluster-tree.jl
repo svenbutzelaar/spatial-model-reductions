@@ -4,10 +4,12 @@ struct TreeNode
     data::ExperimentData
     parent::Symbol
     childeren::Vector{Symbol}
+    
 
-    function TreeNode(data::ExperimentData, parent::Symbol, children::Vector{Symbol})
+    function TreeNode(input_data::ExperimentData, output_Data::ExperimentResult, parent::Symbol, children::Vector{Symbol})
         return new(
-            data,
+            input_data,
+            output_data,
             parent,
             children
         )
