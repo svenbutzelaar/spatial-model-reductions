@@ -111,7 +111,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             @constraint(model, ramping[n, g, t] ≥ -ramping_rate[n, g] * investment_MW[n, g])
         end
 
-        if lowerbound != nothing
+        if lowerbound !== nothing
             @info "Setting upper bound"
             set_optimizer_attribute(model, "Cutoff", lowerbound)
         end 

@@ -8,6 +8,7 @@ using TOML
 using JuMP
 
 include("data-structures.jl")
+include("cluster-tree.jl")
 include("io.jl")
 include("optimization.jl")
 include("experiment.jl")

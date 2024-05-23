@@ -1,4 +1,4 @@
-
+export ClusterTree, AddTreeNode, TreeNode
 
 struct TreeNode
     data::ExperimentData
@@ -6,14 +6,23 @@ struct TreeNode
     childeren::Vector{Symbol}
     
 
-    function TreeNode(input_data::ExperimentData, output_Data::ExperimentResult, parent::Symbol, children::Vector{Symbol})
+    function TreeNode(data::ExperimentData, parent::Symbol, children::Vector{Symbol})
         return new(
-            input_data,
-            output_data,
+            data,
             parent,
             children
         )
     end
+
+
+    # function TreeNode(input_data::ExperimentData, output_Data::ExperimentResult, parent::Symbol, children::Vector{Symbol})
+    #     return new(
+    #         input_data,
+    #         output_data,
+    #         parent,
+    #         children
+    #     )
+    # end
 end
 
 """

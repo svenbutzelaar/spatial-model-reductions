@@ -1,5 +1,19 @@
 export relaxation_iteration
 
+# """
+#     create_cluster_tree(data::ExperimentData)::(ClusterTree)
+
+#     Create the cluster tree of a certain experiment data
+# """
+# function create_cluster_tree(data::ExperimentData, k=1, tree::ClusterTree, parent::Symbol)::ClusterTree
+#     data_relaxed, symbols = relaxation_iteration(data, k)
+#     for symbol in symbols
+#         tree.AddTreeNode(symbol, TreeNode(data_relaxed, parent, ))
+#     end
+
+#     return tree
+# end
+
 """
     relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
 
