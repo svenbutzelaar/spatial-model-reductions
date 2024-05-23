@@ -11,13 +11,21 @@ function benchmark_relaxations(data::ExperimentData, optimizer_factory, line_cap
     @info "doing experiments"
     results_df = DataFrame(n_clusters=Int[], clusters=Vector{Set{Symbol}}[], objective=Float64[], runtime=Float64[])
     dendogram = create_clusters_hierarchy(data)
-    for i = length(data.locations)-1:-1:2
+    i = 2
+    while i <= length(data.locations)
         data_relaxed, clusters = relaxation_iteration(data, dendogram, i)
-        # store_relaxed_data(data_relaxed)
         relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, nothing)
         objective = relaxed_experiment_result.total_investment_cost + relaxed_experiment_result.total_operational_cost
         push!(results_df,  (i, clusters, objective, relaxed_experiment_result.runtime))
+        i = i * 2
     end
+    # for i = length(data.locations)-1:-1:2
+    #     data_relaxed, clusters = relaxation_iteration(data, dendogram, i)
+    #     # store_relaxed_data(data_relaxed)
+    #     relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, nothing)
+    #     objective = relaxed_experiment_result.total_investment_cost + relaxed_experiment_result.total_operational_cost
+    #     push!(results_df,  (i, clusters, objective, relaxed_experiment_result.runtime))
+    # end
 
     @info "finished benchmarks"
     
