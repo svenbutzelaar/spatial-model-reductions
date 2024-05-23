@@ -1,58 +1,16 @@
 export relaxation_iteration
-
-# """
-#     create_cluster_tree(data::ExperimentData)::(ClusterTree)
-
-#     Create the cluster tree of a certain experiment data
-# """
-# function create_cluster_tree(data::ExperimentData, k=1, tree::ClusterTree, parent::Symbol)::ClusterTree
-#     data_relaxed, symbols = relaxation_iteration(data, k)
-#     for symbol in symbols
-#         tree.AddTreeNode(symbol, TreeNode(data_relaxed, parent, ))
-#     end
-
-#     return tree
-# end
-
 """
     relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
 
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, dendogram::Hclust, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters = create_clusters(data, k)
+    clusters = create_clusters(data, dendogram, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
-function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
-    edges = []
-    capacities = []
-    location_indices = Dict(location => i for (i, location) ∈ enumerate(data.locations))
-
-    for line in eachrow(data.transmission_capacities)
-        source = location_indices[line.from]
-        dest = location_indices[line.to]
-        # capacity = mean([line.export_capacity, line.import_capacity])  # Use average capacity from both ways
-        capacity = line.capacity
-        push!(edges, (source, dest))
-        push!(capacities, capacity)
-    end
-
-    # Create a distance matrix where the distance is inversely related to capacity
-    n = length(data.locations)
-    dist_matrix = fill(Inf, n, n)
-
-    for (i, edge) in enumerate(edges)
-        source, dest = edge
-        dist = 1 / capacities[i]
-        dist_matrix[source, dest] = dist
-        dist_matrix[dest, source] = dist  # Assuming undirected graph
-    end 
-
-    # Perform hierarchical clustering using single linkage
-    dendogram = hclust(dist_matrix, linkage=:single)
-    
+function create_clusters(data::ExperimentData, dendogram::Hclust, k::Integer)::Vector{Set{Symbol}}
     # Cut the dendogram to obtain k clusters
     cluster_assignments = cutree(dendogram, k=k)
     clusters = [Set{Symbol}() for _ ∈ 1:k]
