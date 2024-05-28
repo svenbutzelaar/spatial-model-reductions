@@ -8,7 +8,7 @@ export run_optimisation
 function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendogram::Union{Hclust, Nothing})::ExperimentResult
 
     relaxed_experiment_result, clusters = nothing, nothing
-    if !isnothing(dendogram) && (k = (length(data.locations) ÷ 2)) > 2
+    if !isnothing(dendogram) && (k = (length(data.locations) ÷ 2)) > 8
         @info "k: ", k
         data_relaxed, clusters = relaxation_iteration(data, dendogram, k)
         @info "length", length(data_relaxed.locations)
@@ -127,8 +127,8 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
 
             for relaxed_investment in relaxed_investments
                 locations_in_investment = filter(location -> occursin(String(location), String(relaxed_investment.location)), data.locations)
-                @constraint(model, [n ∈ locations_in_investment, g ∈ G],
-                    sum(investment[n, g]) >= relaxed_investment.units
+                @constraint(model, [n ∈ locations_in_investment],
+                    sum(investment[n, g] for g ∈ G if (n, g) ∈ NG) >= relaxed_investment.units
                 )
             end
 
