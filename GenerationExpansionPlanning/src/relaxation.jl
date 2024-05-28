@@ -1,11 +1,10 @@
 export relaxation_iteration
-
 """
     Create clusters and returns merged Dataframes
 """
 function relaxation_iteration(data::ExperimentData, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters = create_clusters(data, k)
+    clusters = create_clusters(data, dendogram, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
@@ -17,7 +16,6 @@ function create_clusters(data::ExperimentData, k::Integer, linkage::Symbol=:comp
     for line in eachrow(data.transmission_capacities)
         source = location_indices[line.from]
         dest = location_indices[line.to]
-        # capacity = mean([line.export_capacity, line.import_capacity])  # Use average capacity from both ways
         capacity = line.capacity
         push!(edges, (source, dest))
         push!(capacities, capacity)
