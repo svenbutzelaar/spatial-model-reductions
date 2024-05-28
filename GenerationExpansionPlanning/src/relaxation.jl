@@ -6,7 +6,8 @@ export relaxation_iteration
 """
 function relaxation_iteration(data::ExperimentData, dendogram::Hclust, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters = create_clusters(data, dendogram, k)
+    clusters = cluster_chain(data)
+    # clusters = create_clusters(data, dendogram, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
@@ -16,6 +17,7 @@ function create_clusters(data::ExperimentData, dendogram::Hclust, k::Integer)::V
     clusters = [Set{Symbol}() for _ ∈ 1:k]
     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
+    # i is the node num, and assignment is the cluster, it is assigned to.
     for (i, assignment) ∈ enumerate(cluster_assignments)
         push!(clusters[assignment], indices_location[i])
     end
@@ -24,6 +26,22 @@ function create_clusters(data::ExperimentData, dendogram::Hclust, k::Integer)::V
 
     return clusters
 end
+
+function cluster_chain(data::ExperimentData)::Vector{Set{Symbol}}
+    # Assume that the chain data is ordered from start chain to end
+    # So location 1 is start of chain and n is end of chain
+    chain_length = length(data.locations)
+    k = ceil(Int64, chain_length/2)
+    clusters = [Set{Symbol}() for _ ∈ 1:k]
+
+    for (i, location) ∈ enumerate(data.locations)
+        assigned_cluster = ceil(Int64, i/2)
+        push!(clusters[assigned_cluster], location)
+    end
+    @info "Created clusters: $clusters"
+    return clusters
+end
+
 
 function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol}})::ExperimentData
     
