@@ -17,6 +17,7 @@ function create_clusters(data::ExperimentData, dendogram::Hclust, k::Integer)::V
     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
     for (i, assignment) ∈ enumerate(cluster_assignments)
+        @info (clusters, assignment, indices_location, i)
         push!(clusters[assignment], indices_location[i])
     end
 

@@ -1,11 +1,22 @@
 export run_optimisation
 
 """
-    run_optimisation(data::ExperimentData, optimizer_factory, lowerbound=nothing, line_capacities_bidirectional::Bool)::ExperimentResult
+    run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendogram::Hclust)::ExperimentResult
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, lowerbound=nothing)::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendogram::Union{Hclust, Nothing})::ExperimentResult
+
+    relaxed_experiment_result, clusters = nothing, nothing
+    if !isnothing(dendogram) && (k = (length(data.locations) ÷ 2)) > 2
+        @info "k: ", k
+        data_relaxed, clusters = relaxation_iteration(data, dendogram, k)
+        @info "length", length(data_relaxed.locations)
+        @info "locations", data_relaxed.locations
+        @info clusters
+        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendogram)
+    end
+
     # 1. Extract data into local variables
     @info "Reading the sets"
     N = data.locations
@@ -111,10 +122,24 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             @constraint(model, ramping[n, g, t] ≥ -ramping_rate[n, g] * investment_MW[n, g])
         end
 
-        if lowerbound !== nothing
-            @info "Setting upper bound"
-            set_optimizer_attribute(model, "Cutoff", lowerbound)
-        end 
+        if isa(relaxed_experiment_result, ExperimentResult)
+            relaxed_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(relaxed_experiment_result.investment)]
+
+            for relaxed_investment in relaxed_investments
+                locations_in_investment = filter(location -> occursin(String(location), String(relaxed_investment.location)), data.locations)
+                @constraint(model, [n ∈ locations_in_investment, g ∈ G],
+                    sum(investment[n, g]) >= relaxed_investment.units
+                )
+            end
+
+            # @info relaxed_investments
+            # exit()
+        end
+
+        # if lowerbound !== nothing
+        #     @info "Setting upper bound"
+        #     set_optimizer_attribute(model, "Cutoff", lowerbound)
+        # end 
 
         # 5. Solve the model
         @info "Solving the model"
