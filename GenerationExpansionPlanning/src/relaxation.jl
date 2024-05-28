@@ -1,17 +1,15 @@
 export relaxation_iteration
 
 """
-    relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
-
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
     clusters = create_clusters(data, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
-function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
+function create_clusters(data::ExperimentData, k::Integer, linkage::Symbol=:complete)::Vector{Set{Symbol}}
     edges = []
     capacities = []
     location_indices = Dict(location => i for (i, location) ∈ enumerate(data.locations))
@@ -34,12 +32,12 @@ function create_clusters(data::ExperimentData, k::Integer)::Vector{Set{Symbol}}
         dist = 1 / capacities[i]
         dist_matrix[source, dest] = dist
         dist_matrix[dest, source] = dist  # Assuming undirected graph
-    end 
+    end
 
-    # Perform hierarchical clustering using single linkage
-    dendogram = hclust(dist_matrix, linkage=:single)
-
-    p = plot(dendogram)
+    # Perform hierarchical clustering
+    dendogram = hclust(dist_matrix, linkage=linkage, branchorder=:optimal)
+    
+    p = plot(dendogram, xticks=false)
     savefig(p, "dendrogram.pdf")
     
     # Cut the dendogram to obtain k clusters
@@ -69,7 +67,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     end
     
     # Get aggregated set and data dicts
-    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict, clusters)
+    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
     # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
     # @info data_dict
@@ -86,7 +84,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     return relaxed_data
 end
 
-function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol}, clusters::Vector{Set{Symbol}})::Dict
+function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol})::Dict
     # All sets:
     N = data.locations
     G = data.generation_technologies
