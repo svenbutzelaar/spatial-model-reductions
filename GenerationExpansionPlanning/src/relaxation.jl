@@ -2,44 +2,19 @@ export relaxation_iteration
 """
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, dendrogram::Hclust, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters = create_clusters(data, dendogram, k)
+    clusters = create_clusters(data, dendrogram, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
-function create_clusters(data::ExperimentData, k::Integer, linkage::Symbol=:complete)::Vector{Set{Symbol}}
-    edges = []
-    capacities = []
-    location_indices = Dict(location => i for (i, location) ∈ enumerate(data.locations))
-
-    for line in eachrow(data.transmission_capacities)
-        source = location_indices[line.from]
-        dest = location_indices[line.to]
-        capacity = line.capacity
-        push!(edges, (source, dest))
-        push!(capacities, capacity)
-    end
-
-    # Create a distance matrix where the distance is inversely related to capacity
-    n = length(data.locations)
-    dist_matrix = fill(Inf, n, n)
-
-    for (i, edge) in enumerate(edges)
-        source, dest = edge
-        dist = 1 / capacities[i]
-        dist_matrix[source, dest] = dist
-        dist_matrix[dest, source] = dist  # Assuming undirected graph
-    end
-
-    # Perform hierarchical clustering
-    dendogram = hclust(dist_matrix, linkage=linkage, branchorder=:optimal)
+function create_clusters(data::ExperimentData, dendrogram::Hclust, k::Integer)::Vector{Set{Symbol}}
     
-    p = plot(dendogram, xticks=false)
+    p = plot(dendrogram, xticks=false)
     savefig(p, "dendrogram.pdf")
     
     # Cut the dendogram to obtain k clusters
-    cluster_assignments = cutree(dendogram, k=k)
+    cluster_assignments = cutree(dendrogram, k=k)
     clusters = [Set{Symbol}() for _ ∈ 1:k]
     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
