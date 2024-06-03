@@ -102,4 +102,4 @@ scalars = "scalars.toml"
                 """)
 
 
-create_clique_case_study(name='cliques_15_5',n=15,clique_size=5,time_steps=100)
+create_clique_case_study(name='cliques_16_4',n=16,clique_size=4,time_steps=100)
