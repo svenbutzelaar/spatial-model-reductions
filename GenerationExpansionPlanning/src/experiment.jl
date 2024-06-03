@@ -10,10 +10,10 @@ function benchmark_relaxations(data::ExperimentData, optimizer_factory, line_cap
     @assert line_capacities_bidirectional == false "TODO relaxations are only possible with directional line capacities right now. try running case_studies/stylized_EU_directional"
     @info "doing experiments"
     results_df = DataFrame(n_clusters=Int[], clusters=Vector{Set{Symbol}}[], objective=Float64[], runtime=Float64[])
-    dendogram = create_clusters_hierarchy(data)
+    dendrogram = create_clusters_hierarchy(data)
     i = 2
     while i <= length(data.locations)
-        data_relaxed, clusters = relaxation_iteration(data, dendogram, i)
+        data_relaxed, clusters = relaxation_iteration(data, dendrogram, i)
         relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, nothing)
         objective = relaxed_experiment_result.total_investment_cost + relaxed_experiment_result.total_operational_cost
         push!(results_df,  (i, clusters, objective, relaxed_experiment_result.runtime))
@@ -33,7 +33,7 @@ function benchmark_relaxations(data::ExperimentData, optimizer_factory, line_cap
     CSV.write("results.csv", results_df)
 end
 
-function create_clusters_hierarchy(data::ExperimentData)::Hclust
+function create_clusters_hierarchy(data::ExperimentData, linkage::Symbol=:complete)::Hclust
     edges = []
     capacities = []
     location_indices = Dict(location => i for (i, location) ∈ enumerate(data.locations))
@@ -59,5 +59,5 @@ function create_clusters_hierarchy(data::ExperimentData)::Hclust
     end 
 
     # Perform hierarchical clustering using single linkage
-    return hclust(dist_matrix, linkage=:single)
+    return hclust(dist_matrix, linkage=linkage, branchorder=:optimal)
 end

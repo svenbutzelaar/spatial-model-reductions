@@ -1,19 +1,20 @@
 export relaxation_iteration
 """
-    relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
-
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, dendogram::Hclust, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, dendrogram::Hclust, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters = cluster_chain(data)
-    # clusters = create_clusters(data, dendogram, k)
+    clusters = create_clusters(data, dendrogram, k)
     return (merge_within_clusters(data, clusters), clusters)
 end
 
-function create_clusters(data::ExperimentData, dendogram::Hclust, k::Integer)::Vector{Set{Symbol}}
+function create_clusters(data::ExperimentData, dendrogram::Hclust, k::Integer)::Vector{Set{Symbol}}
+    
+    p = plot(dendrogram, xticks=false)
+    savefig(p, "dendrogram.pdf")
+    
     # Cut the dendogram to obtain k clusters
-    cluster_assignments = cutree(dendogram, k=k)
+    cluster_assignments = cutree(dendrogram, k=k)
     clusters = [Set{Symbol}() for _ ∈ 1:k]
     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
@@ -56,7 +57,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     end
     
     # Get aggregated set and data dicts
-    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict, clusters)
+    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
     # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
     # @info data_dict
@@ -73,7 +74,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     return relaxed_data
 end
 
-function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol}, clusters::Vector{Set{Symbol}})::Dict
+function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol})::Dict
     # All sets:
     N = data.locations
     G = data.generation_technologies
