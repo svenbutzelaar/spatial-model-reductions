@@ -48,7 +48,7 @@ def get_neighbors(loc_index, grid_size):
 
 np.random.seed(42)
 #set the gridsize you want
-gridsize = 64
+gridsize = 16
 
 
 # New parameters
@@ -123,4 +123,15 @@ config['input']['data']['clusters'] = create_clusters(locations, gridsize)
 # Save the updated configuration
 with open(config_path, 'w') as file:
     toml.dump(config, file)
+
+
+df_export = transmission_df[["from", "to", "export_capacity"]]
+df_export = df_export.rename(columns={"export_capacity": "capacity"})
+
+df_import = transmission_df[["to", "from", "import_capacity"]]
+df_import = df_import.rename(columns={"import_capacity": "capacity", "from": "to", "to": "from"})
+
+df_combined = pd.concat([df_import, df_export])
+
+df_combined.to_csv("case_studies/grid/inputs/transmission_lines2.csv", index=False)
 
