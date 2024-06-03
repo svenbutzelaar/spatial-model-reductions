@@ -87,7 +87,7 @@ line_capacities_bidirectional = false
 clusters = {create_clusters(n, clique_size)}
 
 [input.sets]
-time_steps = "auto"
+time_steps = {list(range(time_steps))}
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
