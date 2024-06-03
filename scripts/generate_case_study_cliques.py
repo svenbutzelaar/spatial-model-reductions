@@ -49,7 +49,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
     for clique in range(n // clique_size):
         clique_iterator = range(clique * clique_size, (clique + 1) * clique_size)
         transmission_lines.extend(
-            f"l_{i},l_{j},4000"
+            f"l{i},l{j},4000"
             for i in clique_iterator
             for j in clique_iterator
             if i != j
@@ -57,7 +57,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     clique_connector_iterator = range(0, n, clique_size)
     transmission_lines.extend(
-            f"l_{i},l_{j},3000"
+            f"l{i},l{j},3000"
             for i in clique_connector_iterator
             for j in clique_connector_iterator
             if i != j
