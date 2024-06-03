@@ -1,22 +1,25 @@
 export run_experiment
 
 
-function run_experiment(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Vector)::ExperimentResult
+function run_experiment(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Vector, config::Dict{Symbol,Any})::ExperimentResult
     @assert line_capacities_bidirectional == false "TODO relaxations are only possible with directional line capacities right now. try running case_studies/stylized_EU_directional"
     @info "doing experiments"
+    
+    # Use debug = true if you want every intermediate step to be written to you output file
+    debug = false
 
     results_df = DataFrame(relaxation=Bool[], objective=Float64[], runtime=Float64[])
     # removed as we first start to work with our own clustering objectives
     # dendrogram = create_clusters_hierarchy(data)
-    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data)
+    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     # push!(results_df,  (true, objective, relaxed_result.runtime))
     
-    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data)
+    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     push!(results_df,  (true, objective, relaxed_result.runtime))
 
-    result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data)
+    result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
     objective = result.total_investment_cost + result.total_operational_cost
     push!(results_df,  (false, objective, result.runtime))
 

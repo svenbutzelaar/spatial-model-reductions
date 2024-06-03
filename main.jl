@@ -16,9 +16,8 @@ experiment_data = ExperimentData(config[:input])
 
 # Step 3: Run the experiments
 @info "Running the experiments defined by $config_path"
-ClusterTree = 
-experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree])
+output_config = config[:output]
+experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], output_config)
 
 # Step 4: Save the results
-output_config = config[:output]
 save_result(experiment_result, output_config)

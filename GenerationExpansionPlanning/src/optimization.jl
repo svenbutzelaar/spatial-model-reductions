@@ -5,18 +5,23 @@ export run_optimisation
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, data_og::ExperimentData)::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
 
     relaxed_experiment_result, clusters = nothing, nothing
     # for test purposes this if statement is changed to 1 instead of 8
     # if !isnothing(dendrogram) && (k = (length(data.locations) ÷ 2)) > 8
     # TODO: change this back when testing is successful 
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)
-        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram, data_og)
+        @info "start running relaxation"
+        # data_og (original experioment data without merges) is used for merging
+        data_relaxed, clusters, dendrogram_new = relaxation_iteration(dendrogram, data_og)
         @info "length", length(data_relaxed.locations)
         @info "locations", data_relaxed.locations
         @info "cluster", clusters
-        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og)
+        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og, config, debug)
+        if debug
+            save_result(relaxed_experiment_result, config)
+        end
     end
 
     # 1. Extract data into local variables
@@ -128,7 +133,10 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             relaxed_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(relaxed_experiment_result.investment)]
 
             for relaxed_investment in relaxed_investments
-                locations_in_investment = filter(location -> occursin(String(location), String(relaxed_investment.location)), data.locations)
+
+                @info "locations=$(data.locations) and relaxed_investment.location=$(relaxed_investment.location)"
+                locations_in_investment = filter(location -> is_location_in_cluster(location, relaxed_investment.location), data.locations)
+                @info "locations_in_investment=$locations_in_investment"
                 @constraint(model,
                     sum(investment[n, g] for g ∈ G, n∈locations_in_investment if (n, g) ∈ NG) >= relaxed_investment.units
                 )
@@ -170,4 +178,12 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         loss_of_load_decisions,
         dt
     )
+end
+
+function is_location_in_cluster(location::Symbol, cluster::Symbol)::Bool
+    location_parts = Set(String.(split(string(location), "_")))
+    cluster_parts = Set(String.(split(string(cluster), "_")))
+    
+    return issubset(location_parts, cluster_parts)
+
 end

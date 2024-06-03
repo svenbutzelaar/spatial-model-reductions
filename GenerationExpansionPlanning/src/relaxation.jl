@@ -5,9 +5,9 @@ export relaxation_iteration
 
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
+function relaxation_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
     # Create k clusters
-    clusters, dendrogram_new = create_clusters(data, dendrogram)
+    clusters, dendrogram_new = create_clusters(dendrogram)
     @info ("CLUSTERS are made; ", clusters)
     return (merge_within_clusters(data_og, clusters), clusters, dendrogram_new)
 end
@@ -30,45 +30,14 @@ end
 #     return clusters
 # end
 
-function create_clusters(data::ExperimentData, dendrogram::Vector)
-    # # Cut the dendrogram to obtain k clusters
-    # clusters = []
-    # indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
-
-    # @info cluster_assignments, data.locations
-    # assignment staat voor nummer van cluster die gemaakt wordt
-    # indices_location[i] pakt de location die hoort bij index i
-    @info "dendrogram", dendrogram
+function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Vector, Nothing}}
+    # Create new dendrogram only if the depth is bigger then 2
     if (depth(dendrogram) > 2)
         dendrogram_new = flatten_innermost_layer(dendrogram)
     else 
         dendrogram_new = nothing
     end
     clusters = create_clusters_merging_last_layer_rec(dendrogram)
-
-
-    # layer_queue = Queue{Any}()
-    # enqueue!(layer_queue,vec(dendrogram))
-    # j = 1
-    # while length(layer_queue) > 0
-    #     layer = dequeue!(layer_queue)
-    #     @info ("47", layer)
-    #     if !(layer isa Vector{Vector{Symbol}})
-    #         push!(clusters, Set{Symbol}())
-    #         l = length(layer)
-    #         for i ∈ 1:l
-    #             @assert !(layer[i] isa Vector{Any}) "Depth of layers is not equal to each other, create a tree with equal depth"
-                
-    #             push!(clusters[j], layer[i])
-    #         end
-    #         j = j + 1
-    #     else
-    #         @info (52,layer)
-    #         for i ∈ 1:size(layer)[1]
-    #             enqueue!(layer_queue, layer[i])
-    #         end
-    #     end
-    # end
 
     println("created clusters: $clusters")
     println("Dendrogram old: $dendrogram")
@@ -96,7 +65,7 @@ function depth(arr)::Int64
     end
 end
 
-function flatten_innermost_layer(arr)
+function flatten_innermost_layer(arr)::Union{Vector,Nothing}
     if arr isa Symbol
         return nothing
     end
@@ -106,7 +75,7 @@ function flatten_innermost_layer(arr)
 
     result = Vector{Any}()
     # Base case
-    if arr isa Vector{Vector{Symbol}}
+    if arr isa Vector{Vector{Symbol}} || (arr isa Vector{Any} && arr[1] isa Vector{Any} && arr[1][1] isa Symbol)
         for vect in arr
             append!(result, vect)
         end
@@ -119,7 +88,7 @@ function flatten_innermost_layer(arr)
         if isnothing(n)
             return n 
         end
-        append!(result, n)
+        push!(result, n)
     end
 
     return result
