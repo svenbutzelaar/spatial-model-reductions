@@ -5,18 +5,18 @@ export run_optimisation
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing})::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, data_og::ExperimentData)::ExperimentResult
 
     relaxed_experiment_result, clusters = nothing, nothing
     # for test purposes this if statement is changed to 1 instead of 8
     # if !isnothing(dendrogram) && (k = (length(data.locations) ÷ 2)) > 8
     # TODO: change this back when testing is successful 
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)
-        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram)
+        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram, data_og)
         @info "length", length(data_relaxed.locations)
         @info "locations", data_relaxed.locations
-        @info clusters
-        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new)
+        @info "cluster", clusters
+        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og)
     end
 
     # 1. Extract data into local variables
