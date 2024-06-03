@@ -7,6 +7,7 @@ generation = "generation.csv"
 transmission_lines = "transmission_lines.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = true
+cluster_tree = [["BEL"], ["NED"]]
 
 [input.sets]
 time_steps = [1,2,3,4,5]

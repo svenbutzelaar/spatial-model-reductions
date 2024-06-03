@@ -1,20 +1,22 @@
 export run_optimisation
 
 """
-    run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendogram::Hclust)::ExperimentResult
+    run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Vector)::ExperimentResult
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendogram::Union{Hclust, Nothing})::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing})::ExperimentResult
 
     relaxed_experiment_result, clusters = nothing, nothing
-    if !isnothing(dendogram) && (k = (length(data.locations) ÷ 2)) > 8
-        @info "k: ", k
-        data_relaxed, clusters = relaxation_iteration(data, dendogram, k)
+    # for test purposes this if statement is changed to 1 instead of 8
+    # if !isnothing(dendrogram) && (k = (length(data.locations) ÷ 2)) > 8
+    # TODO: change this back when testing is successful 
+    if !(dendrogram isa Vector{Vector})
+        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram, k)
         @info "length", length(data_relaxed.locations)
         @info "locations", data_relaxed.locations
         @info clusters
-        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendogram)
+        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new)
     end
 
     # 1. Extract data into local variables
@@ -127,8 +129,8 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
 
             for relaxed_investment in relaxed_investments
                 locations_in_investment = filter(location -> occursin(String(location), String(relaxed_investment.location)), data.locations)
-                @constraint(model, [n ∈ locations_in_investment],
-                    sum(investment[n, g] for g ∈ G if (n, g) ∈ NG) >= relaxed_investment.units
+                @constraint(model,
+                    sum(investment[n, g] for g ∈ G, n∈locations_in_investment if (n, g) ∈ NG) >= relaxed_investment.units
                 )
             end
 
