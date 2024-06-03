@@ -5,9 +5,10 @@ export relaxation_iteration
 
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, dendrogram::Vector)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, dendrogram::Vector)::Tuple{ExperimentData, Vector{Set{Symbol}}, Vector}
     # Create k clusters
     clusters, dendrogram_new = create_clusters(data, dendrogram)
+    @info ("CLUSTERS are made; ", clusters)
     return (merge_within_clusters(data, clusters), clusters, dendrogram_new)
 end
 
@@ -29,22 +30,27 @@ end
 #     return clusters
 # end
 
-function create_clusters(data::ExperimentData, dendrogram::Vector)::Vector{Set{Symbol}}
+function create_clusters(data::ExperimentData, dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Vector} 
     # Cut the dendrogram to obtain k clusters
     clusters = []
+    indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
+    # @info cluster_assignments, data.locations
+    # assignment staat voor nummer van cluster die gemaakt wordt
+    # indices_location[i] pakt de location die hoort bij index i
     dendrogram_new = flatten_innermost_layer(dendrogram)
     layer_queue = Queue{Any}()
-    enqueue!(layer_queue,dendrogram)
+    enqueue!(layer_queue,vec(dendrogram_new))
     j = 1
     while length(layer_queue) > 0
         layer = dequeue!(layer_queue)
-        if !(layer isa Vector{Vector{Any}})
-            @info (43,layer)
+        @info ("47", layer)
+        if !(layer isa Vector{Vector{Symbol}})
             push!(clusters, Set{Symbol}())
             l = length(layer)
             for i ∈ 1:l
                 @assert !(layer[i] isa Vector{Any}) "Depth of layers is not equal to each other, create a tree with equal depth"
+                
                 push!(clusters[j], layer[i])
             end
             j = j + 1
@@ -59,13 +65,16 @@ function create_clusters(data::ExperimentData, dendrogram::Vector)::Vector{Set{S
     println("created clusters: $clusters")
     println("Dendrogram old: $dendrogram")
     println("dendrogram new: $dendrogram_new")
-    return clusters, dendrogram_new
+    return (clusters, dendrogram_new)
 end
 
 function flatten_innermost_layer(arr)
+    @info (72, arr)
     if !isa(arr[1], Vector)
-        return arr
+        @info (74, arr)
+        return arr[1]
     end
+    @info (76, [vcat(inner...) for inner in arr])
     [flatten_innermost_layer(vcat(inner...)) for inner in arr]
 end
 

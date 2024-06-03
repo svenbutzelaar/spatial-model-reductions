@@ -98,7 +98,6 @@ function read_config(config_path::AbstractString)::Dict{Symbol,Any}
     config[:line_capacities_bidirectional] = data_config[:line_capacities_bidirectional]
     config[:cluster_tree] = convert_to_symbols(data_config[:cluster_tree])
 
-
     return config
 end
 
