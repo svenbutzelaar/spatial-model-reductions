@@ -6,7 +6,7 @@ generation_availability = "generation_availability.csv"
 generation = "generation.csv"
 transmission_lines = "transmission_lines.csv"
 scalars = "scalars.toml"
-line_capacities_bidirectional = true
+line_capacities_bidirectional = false
 cluster_tree = [["BEL"], ["NED"]]
 
 [input.sets]

@@ -5,9 +5,9 @@ export relaxation_iteration
 
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, dendrogram::Vector, k=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(data::ExperimentData, dendrogram::Vector)::Tuple{ExperimentData, Vector{Set{Symbol}}}
     # Create k clusters
-    clusters, dendrogram_new = create_clusters(data, dendrogram, k)
+    clusters, dendrogram_new = create_clusters(data, dendrogram)
     return (merge_within_clusters(data, clusters), clusters, dendrogram_new)
 end
 
@@ -29,9 +29,9 @@ end
 #     return clusters
 # end
 
-function create_clusters(data::ExperimentData, dendrogram::Vector, k::Integer)::Vector{Set{Symbol}}
+function create_clusters(data::ExperimentData, dendrogram::Vector)::Vector{Set{Symbol}}
     # Cut the dendrogram to obtain k clusters
-    clusters = [Set{Symbol}() for _ ∈ 1:k]
+    clusters = []
     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
     @info cluster_assignments, data.locations

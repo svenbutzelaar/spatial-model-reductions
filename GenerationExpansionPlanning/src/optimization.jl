@@ -12,7 +12,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
     # if !isnothing(dendrogram) && (k = (length(data.locations) ÷ 2)) > 8
     # TODO: change this back when testing is successful 
     if !(dendrogram isa Vector{Vector})
-        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram, k)
+        data_relaxed, clusters, dendrogram_new = relaxation_iteration(data, dendrogram)
         @info "length", length(data_relaxed.locations)
         @info "locations", data_relaxed.locations
         @info clusters
