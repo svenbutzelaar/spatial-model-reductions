@@ -1,7 +1,7 @@
 export run_experiment
 
 function run_experiment(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool)::ExperimentResult
-    benchmark_relaxations(data, optimizer_factory, line_capacities_bidirectional)
+    # benchmark_relaxations(data, optimizer_factory, line_capacities_bidirectional)
 
     return run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing)
 end
