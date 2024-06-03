@@ -72,7 +72,7 @@ function flatten_innermost_layer(arr)
     @info (72, arr)
     if !isa(arr[1], Vector)
         @info (74, arr)
-        return arr[1]
+        return arr
     end
     @info (76, [vcat(inner...) for inner in arr])
     [flatten_innermost_layer(vcat(inner...)) for inner in arr]

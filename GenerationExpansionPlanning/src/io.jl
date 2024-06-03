@@ -96,7 +96,7 @@ function read_config(config_path::AbstractString)::Dict{Symbol,Any}
 
     config[:output][:dir] = (config_dir, config[:output][:dir]) |> joinpath |> abspath
     config[:line_capacities_bidirectional] = data_config[:line_capacities_bidirectional]
-    config[:cluster_tree] = convert_to_symbols(data_config[:cluster_tree])
+    config[:cluster_tree] = convert_to_symbols(data_config[:clusters])
 
     return config
 end
