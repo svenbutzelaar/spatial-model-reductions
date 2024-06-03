@@ -32,26 +32,24 @@ end
 function create_clusters(data::ExperimentData, dendrogram::Vector)::Vector{Set{Symbol}}
     # Cut the dendrogram to obtain k clusters
     clusters = []
-    indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
-    @info cluster_assignments, data.locations
-    # assignment staat voor nummer van cluster die gemaakt wordt
-    # indices_location[i] pakt de location die hoort bij index i
     dendrogram_new = flatten_innermost_layer(dendrogram)
-    layer_queue = Queue{Vector}
+    layer_queue = Queue{Any}()
     enqueue!(layer_queue,dendrogram)
     j = 1
     while length(layer_queue) > 0
         layer = dequeue!(layer_queue)
-        if !(layer isa Vector{Vector})
+        if !(layer isa Vector{Vector{Any}})
+            @info (43,layer)
             push!(clusters, Set{Symbol}())
-            l = size(layer)
+            l = length(layer)
             for i ∈ 1:l
-                @assert !(layer[i] isa Vector) "Depth of layers is not equal to each other, create a tree with equal depth"
+                @assert !(layer[i] isa Vector{Any}) "Depth of layers is not equal to each other, create a tree with equal depth"
                 push!(clusters[j], layer[i])
             end
             j = j + 1
         else
+            @info (52,layer)
             for i ∈ 1:size(layer)[1]
                 enqueue!(layer_queue, layer[i])
             end
