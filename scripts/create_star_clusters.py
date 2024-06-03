@@ -74,15 +74,14 @@ def create_star_case_study(name, chain_length, degrees, time_steps):
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
-    for i in range(1, degrees, chain_length):
+    for i in range(1, total_locations, chain_length):
         transmission_lines.append(
             f"l{0},l{i},{random.randint(1, 20) * 10}"
         )
-    for chain in chains:
-        for i in range(len(chain)-1):
+        for j in range(0, chain_length-1):
             transmission_lines.append(
-                f"l{i},l{i+1},{random.randint(1, 20) * 10}"
-            )
+                f"l{i+j},l{i+j+1},{random.randint(1, 20) * 10}"
+            )            
 
     with open(f'{input_folder}/transmission_lines2.csv', 'w+') as f:
         f.write("\n".join(transmission_lines))
@@ -119,6 +118,6 @@ loss_of_load = "loss_of_load.csv"
 scalars = "scalars.toml"
                 """)
     
-chain_length = 2
-degrees = 4
+chain_length = 3
+degrees = 3
 create_star_case_study(f"{chain_length}_{degrees}_star", chain_length, degrees, 100)
