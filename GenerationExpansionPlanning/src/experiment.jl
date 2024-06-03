@@ -10,13 +10,13 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     # dendrogram = create_clusters_hierarchy(data)
     relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data)
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
-    push!(results_df,  (true, objective, relaxed_result.runtime))
+    # push!(results_df,  (true, objective, relaxed_result.runtime))
     
-    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram)
+    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data)
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     push!(results_df,  (true, objective, relaxed_result.runtime))
 
-    result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing)
+    result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data)
     objective = result.total_investment_cost + result.total_operational_cost
     push!(results_df,  (false, objective, result.runtime))
 
