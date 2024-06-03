@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import toml
 
 # grid_size is expected to be a squared number of 2^x for integers x
 # loc_index is the index of the location for which you want to neighbors
@@ -34,14 +35,14 @@ for i, location in enumerate(new_locations):
 
 # add the demand file to the grid case study
 new_demand_df = pd.DataFrame(new_demand_data, columns=['location', 'time_step', 'demand'])
-new_demand_df.to_csv('case_studies/grid/new_demand.csv', index=False)
+new_demand_df.to_csv('case_studies/grid/inputs/new_demand.csv', index=False)
 
 new_technologies = ['Gas']
 
 #Add generation availability, which is nothing as of now.
 new_generation_availability_data = []
 new_generation_availability_df = pd.DataFrame(new_generation_availability_data, columns=['location', 'technology', 'time_step', 'availability'])
-new_generation_availability_df.to_csv('case_studies/grid/new_generation_availability.csv', index=False)
+new_generation_availability_df.to_csv('case_studies/grid/inputs/new_generation_availability.csv', index=False)
 
 #Add generation data
 new_generation_data = []
@@ -55,7 +56,7 @@ for technology in new_technologies:
 
 # Create DataFrame for generation characteristics
 new_generation_df = pd.DataFrame(new_generation_data, columns=['technology', 'location', 'investment_cost', 'variable_cost', 'unit_capacity', 'ramping_rate'])
-new_generation_df.to_csv('case_studies/grid/new_generation.csv', index=False)
+new_generation_df.to_csv('case_studies/grid/inputs/new_generation.csv', index=False)
 
 # Generate new transmission data
 new_transmission_data = []
@@ -70,8 +71,18 @@ for i, location in enumerate(new_locations):
         
 # Create DataFrame for transmission lines
 new_transmission_df = pd.DataFrame(new_transmission_data, columns=['from', 'to', 'export_capacity', 'import_capacity'])
-new_transmission_df.to_csv('case_studies/grid/new_transmission_lines.csv', index=False)
+new_transmission_df.to_csv('case_studies/grid/inputs/new_transmission_lines.csv', index=False)
 
 
+# Load the existing configuration
+config_path = "./case_studies/grid/config.toml"
+with open(config_path, 'r') as file:
+    config = toml.load(file)
+    
+# Update the time_steps
+config['input']['sets']['time_steps'] = new_time_steps
 
+# Save the updated configuration
+with open(config_path, 'w') as file:
+    toml.dump(config, file)
 
