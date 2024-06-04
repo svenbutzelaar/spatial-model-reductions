@@ -7,7 +7,7 @@ def create_clusters(locations, grid_size):
     clusters = []
     if grid_size == 4:
         for loc in locations:
-            clusters.append([loc])
+            clusters.append(loc)
         return clusters
     
     new_grid_size = int(grid_size/4)
@@ -47,7 +47,7 @@ def get_neighbors(loc_index, grid_size):
 
 np.random.seed(42)
 #set the gridsize you want
-gridsize = 64
+gridsize = 16
 
 
 # New parameters
