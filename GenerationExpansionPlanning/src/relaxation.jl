@@ -1,30 +1,95 @@
+using DataStructures
 export relaxation_iteration
 """
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(data::ExperimentData, dendrogram::Hclust, k::Integer=2)::Tuple{ExperimentData, Vector{Set{Symbol}}}
+function relaxation_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
     # Create k clusters
-    clusters = create_clusters(data, dendrogram, k)
-    return (merge_within_clusters(data, clusters), clusters)
+    clusters, dendrogram_new = create_clusters(dendrogram)
+    @info ("CLUSTERS are made; ", clusters)
+    return (merge_within_clusters(data_og, clusters), clusters, dendrogram_new)
 end
 
-function create_clusters(data::ExperimentData, dendrogram::Hclust, k::Integer)::Vector{Set{Symbol}}
-    
-    p = plot(dendrogram, xticks=false)
-    savefig(p, "dendrogram.pdf")
-    
-    # Cut the dendogram to obtain k clusters
-    cluster_assignments = cutree(dendrogram, k=k)
-    clusters = [Set{Symbol}() for _ ∈ 1:k]
-    indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
+# function create_clusters(data::ExperimentData, dendrogram::Hclust, k::Integer)::Vector{Set{Symbol}}
+#     # Cut the dendrogram to obtain k clusters
+#     cluster_assignments = cutree(dendrogram, k=k)
+#     clusters = [Set{Symbol}() for _ ∈ 1:k]
+#     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
 
-    for (i, assignment) ∈ enumerate(cluster_assignments)
-        push!(clusters[assignment], indices_location[i])
+#     @info cluster_assignments, data.locations
+
+
+#     for (i, assignment) ∈ enumerate(cluster_assignments)
+#         push!(clusters[assignment], indices_location[i])
+#     end
+
+#     println("created clusters: $clusters")
+
+#     return clusters
+# end
+
+function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Vector, Nothing}}
+    # Create new dendrogram only if the depth is bigger then 2
+    if (depth(dendrogram) > 2)
+        dendrogram_new = flatten_innermost_layer(dendrogram)
+    else 
+        dendrogram_new = nothing
     end
+    clusters = create_clusters_merging_last_layer_rec(dendrogram)
 
     println("created clusters: $clusters")
+    println("Dendrogram old: $dendrogram")
+    println("dendrogram new: $dendrogram_new")
+    return (clusters, dendrogram_new)
+end
 
+function create_clusters_merging_last_layer_rec(dendrogram :: Vector) :: Vector{Set{Symbol}}
+    if depth(dendrogram) == 1
+        return [Set(dendrogram)]
+    end
+
+    clusters = []
+    for vect in dendrogram
+        append!(clusters, create_clusters_merging_last_layer_rec(vect))
+    end
     return clusters
+end
+
+function depth(arr)::Int64
+    if (arr isa Symbol)
+        return 0
+    else
+        return 1 + depth(arr[1])
+    end
+end
+
+function flatten_innermost_layer(arr)::Union{Vector,Nothing}
+    if arr isa Symbol
+        return nothing
+    end
+    if arr isa Vector{Symbol}
+        return nothing
+    end
+
+    result = Vector{Any}()
+    # Base case
+    if arr isa Vector{Vector{Symbol}} || (arr isa Vector{Any} && arr[1] isa Vector{Any} && arr[1][1] isa Symbol)
+        for vect in arr
+            append!(result, vect)
+        end
+        return result
+    end
+
+    # recursive case
+    for vect in arr
+        n = flatten_innermost_layer(vect)
+        if isnothing(n)
+            return n 
+        end
+        push!(result, n)
+    end
+
+    return result
 end
 
 function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol}})::ExperimentData
