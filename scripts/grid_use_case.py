@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import toml
-import math 
 
 #assume gridsize = a squared number of 2^x for integers x
 def create_clusters(locations, grid_size):
@@ -53,7 +52,7 @@ gridsize = 16
 
 # New parameters
 locations = [f'l{i}' for i in range(1, gridsize + 1)]
-time_steps = list(range(1, 1001))
+time_steps = list(range(1,8761))
 
 create_clusters(locations, gridsize)
 
