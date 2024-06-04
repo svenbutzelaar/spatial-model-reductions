@@ -11,8 +11,8 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     results_df = DataFrame(relaxation=Bool[], objective=Float64[], runtime=Float64[])
     # removed as we first start to work with our own clustering objectives
     # dendrogram = create_clusters_hierarchy(data)
-    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
-    objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
+    # relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
+    # objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     # push!(results_df,  (true, objective, relaxed_result.runtime))
     
     relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)

@@ -10,24 +10,6 @@ function relaxation_iteration(dendrogram::Vector, data_og::ExperimentData)::Tupl
     return (merge_within_clusters(data_og, clusters), clusters, dendrogram_new)
 end
 
-# function create_clusters(data::ExperimentData, dendrogram::Hclust, k::Integer)::Vector{Set{Symbol}}
-#     # Cut the dendrogram to obtain k clusters
-#     cluster_assignments = cutree(dendrogram, k=k)
-#     clusters = [Set{Symbol}() for _ ∈ 1:k]
-#     indices_location = Dict(i => location for (i, location) ∈ enumerate(data.locations))
-
-#     @info cluster_assignments, data.locations
-
-
-#     for (i, assignment) ∈ enumerate(cluster_assignments)
-#         push!(clusters[assignment], indices_location[i])
-#     end
-
-#     println("created clusters: $clusters")
-
-#     return clusters
-# end
-
 function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Vector, Nothing}}
     # Create new dendrogram only if the depth is bigger then 2
     if (depth(dendrogram) > 2)
@@ -36,10 +18,9 @@ function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Ve
         dendrogram_new = nothing
     end
     clusters = create_clusters_merging_last_layer_rec(dendrogram)
-
-    println("created clusters: $clusters")
-    println("Dendrogram old: $dendrogram")
-    println("dendrogram new: $dendrogram_new")
+    # println("created clusters: $clusters")
+    # println("Dendrogram old: $dendrogram")
+    # println("dendrogram new: $dendrogram_new")
     return (clusters, dendrogram_new)
 end
 

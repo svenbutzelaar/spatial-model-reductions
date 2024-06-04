@@ -47,7 +47,7 @@ def get_neighbors(loc_index, grid_size):
 
 np.random.seed(42)
 #set the gridsize you want
-gridsize = 16
+gridsize = 64
 
 
 # New parameters
