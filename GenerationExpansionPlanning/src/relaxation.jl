@@ -1,8 +1,6 @@
 using DataStructures
 export relaxation_iteration
 """
-    relaxation_iteration(data::ExperimentData, k=2)::(ExperimentData, Vector{Set{Symbol}})
-
     Create clusters and returns merged Dataframes
 """
 function relaxation_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
@@ -107,7 +105,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     end
     
     # Get aggregated set and data dicts
-    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict, clusters)
+    set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
     # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
     # @info data_dict
@@ -124,7 +122,7 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     return relaxed_data
 end
 
-function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol}, clusters::Vector{Set{Symbol}})::Dict
+function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol})::Dict
     # All sets:
     N = data.locations
     G = data.generation_technologies
