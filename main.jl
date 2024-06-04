@@ -1,4 +1,5 @@
 using GenerationExpansionPlanning
+using Revise
 using Gurobi
 
 # Step 1: Read the experiment config
@@ -7,7 +8,7 @@ config_path = "case_studies/grid/config.toml"
 # config_path = "case_studies/stylized_EU/config.toml"
 # config_path = "case_studies/8_locations/config.toml"
 # config_path = "case_studies/stylized_EU_directional/config.toml"
-# config_path = "case_studies/2_locations/config.toml"
+config_path = "case_studies/cliques_16_4/config.toml"
 config = read_config(config_path)
 
 # Step 2: Parse the data
@@ -16,8 +17,8 @@ experiment_data = ExperimentData(config[:input])
 
 # Step 3: Run the experiments
 @info "Running the experiments defined by $config_path"
-experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional])
+output_config = config[:output]
+experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], output_config)
 
 # Step 4: Save the results
-output_config = config[:output]
 save_result(experiment_result, output_config)

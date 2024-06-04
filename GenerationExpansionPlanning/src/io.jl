@@ -96,6 +96,7 @@ function read_config(config_path::AbstractString)::Dict{Symbol,Any}
 
     config[:output][:dir] = (config_dir, config[:output][:dir]) |> joinpath |> abspath
     config[:line_capacities_bidirectional] = data_config[:line_capacities_bidirectional]
+    config[:cluster_tree] = convert_to_symbols(data_config[:clusters])
 
     return config
 end
@@ -186,4 +187,12 @@ function store_relaxed_data(data::ExperimentData)
     save_dataframe(data.generation_availability, "relaxed_generation_availability.csv")
     save_dataframe(data.generation, "relaxed_generation.csv")
     save_dataframe(data.transmission_capacities, "relaxed_transmission_capacities.csv")
+end
+
+function convert_to_symbols(arr)
+    if arr isa AbstractVector
+        return [convert_to_symbols(elem) for elem in arr]
+    else
+        return Symbol(arr)
+    end
 end
