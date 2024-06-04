@@ -15,13 +15,17 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     # push!(results_df,  (true, objective, relaxed_result.runtime))
     
-    relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
+    time = @elapsed begin
+        relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
+    end
     objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
-    push!(results_df,  (true, objective, relaxed_result.runtime))
+    push!(results_df,  (true, objective, time))
 
-    result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
+    time = @elapsed begin
+        result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
+    end
     objective = result.total_investment_cost + result.total_operational_cost
-    push!(results_df,  (false, objective, result.runtime))
+    push!(results_df,  (false, objective, time))
 
     @info "finished benchmarks"
     

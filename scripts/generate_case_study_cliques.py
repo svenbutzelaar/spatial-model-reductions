@@ -1,13 +1,17 @@
 
 import os
 
+import numpy as np
+
 def create_clusters(n, clique_size):
-    input_list = list(range(n))
+    input_list = list(f'l{i}' for i in range(n))
     return [input_list[i:i + clique_size] for i in range(0, n, clique_size)]
 
 def create_clique_case_study(name, n, clique_size, time_steps):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
+    
+    np.random.seed(42)
 
     # Create folders
     if not os.path.exists(folder):
@@ -17,12 +21,13 @@ def create_clique_case_study(name, n, clique_size, time_steps):
     
 
     assert n % clique_size == 0
-
+    initial_demand = np.random.uniform(3000, 8000, size=n)
     # Demands
     demands = ["location,time_step,demand"]
     for location in range(n):
-        for time_step in range(time_steps):
-            demands.append(f"l{location},{time_step},100")
+        for time_step in range(1, time_steps):
+            change = np.random.uniform(-500, 500)
+            demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
 
     with open(f'{input_folder}/demand.csv', 'w+') as f:
         f.write('\n'.join(demands) + '\n')
@@ -40,6 +45,8 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     for location in range(n):
         generation.append(f"Gas,l{location},23.33333333,0.05,250,0.75")
+    for location in range(0, n, clique_size):
+        generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
 
     with open(f'{input_folder}/generation.csv', 'w+') as f:
         f.write('\n'.join(generation) + '\n')
@@ -57,7 +64,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     clique_connector_iterator = range(0, n, clique_size)
     transmission_lines.extend(
-            f"l{i},l{j},3000"
+            f"l{i},l{j},2000"
             for i in clique_connector_iterator
             for j in clique_connector_iterator
             if i != j
@@ -87,7 +94,7 @@ line_capacities_bidirectional = false
 clusters = {create_clusters(n, clique_size)}
 
 [input.sets]
-time_steps = {list(range(time_steps))}
+time_steps = {list(range(1, time_steps))}
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
@@ -102,4 +109,4 @@ scalars = "scalars.toml"
                 """)
 
 
-create_clique_case_study(name='cliques_16_4',n=16,clique_size=4,time_steps=100)
+create_clique_case_study(name='cliques_10_5',n=10,clique_size=5,time_steps=8761)
