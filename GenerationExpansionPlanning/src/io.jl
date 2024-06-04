@@ -174,7 +174,7 @@ function save_result(result::ExperimentResult, config::Dict{Symbol,Any})
     end
 end
 
-function store_relaxed_data(data::ExperimentData)
+function store_reduced_data(data::ExperimentData)
     dir = "inputs"
     mkpath(dir)
 
@@ -183,10 +183,10 @@ function store_relaxed_data(data::ExperimentData)
         CSV.write(full_path, df)
     end
 
-    save_dataframe(data.demand, "relaxed_demand.csv")
-    save_dataframe(data.generation_availability, "relaxed_generation_availability.csv")
-    save_dataframe(data.generation, "relaxed_generation.csv")
-    save_dataframe(data.transmission_capacities, "relaxed_transmission_capacities.csv")
+    save_dataframe(data.demand, "reduced_demand.csv")
+    save_dataframe(data.generation_availability, "reduced_generation_availability.csv")
+    save_dataframe(data.generation, "reduced_generation.csv")
+    save_dataframe(data.transmission_capacities, "reduced_transmission_capacities.csv")
 end
 
 function convert_to_symbols(arr)

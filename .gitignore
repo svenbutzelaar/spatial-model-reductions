@@ -30,6 +30,7 @@ Manifest.toml
 .vscode
 
 results.csv
+/results
 /inputs
 /case_studies/2_locations/output
 /case_studies/stylized_EU_directional/output

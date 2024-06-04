@@ -5,14 +5,14 @@ using DataFrames
 using Statistics
 using Clustering
 using StatsPlots
+using Dates
 using TOML
 using JuMP
 
 include("data-structures.jl")
-include("cluster-tree.jl")
 include("io.jl")
 include("optimization.jl")
 include("experiment.jl")
-include("relaxation.jl")
+include("reduction.jl")
 
-end # module GenerationExpansionPlanning
+end
