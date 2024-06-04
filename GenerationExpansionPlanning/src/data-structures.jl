@@ -71,3 +71,10 @@ struct ExperimentResult
         )
     end
 end
+
+struct Investment
+    location::Symbol
+    technology::Symbol
+    capacity::Float64
+    units::Int64
+end

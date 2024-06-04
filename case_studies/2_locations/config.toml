@@ -4,9 +4,10 @@ dir = "inputs"
 demand = "demand.csv"
 generation_availability = "generation_availability.csv"
 generation = "generation.csv"
-transmission_lines = "transmission_lines.csv"
+transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
-line_capacities_bidirectional = true
+line_capacities_bidirectional = false
+cluster_tree = [["BEL"], ["NED"]]
 
 [input.sets]
 time_steps = [1,2,3,4,5]
