@@ -14,25 +14,14 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     # relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     # objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
     # push!(results_df,  (true, objective, relaxed_result.runtime))
-    time = @elapsed begin
-        relaxed_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
-    end
-    objective = relaxed_result.total_investment_cost + relaxed_result.total_operational_cost
-    push!(results_df,  (true, objective, time))
-    
-    time = @elapsed begin
-        result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
-    end
-    results_df = DataFrame(reduction=Bool[], objective=Float64[], runtime=Float64[])
-    reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
-    objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
-    
+    @info "Running experiment reduced"
     time = @elapsed begin
         reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     end
     objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
     push!(results_df,  (true, objective, time))
 
+    @info "Running experiment not reduced"
     time = @elapsed begin
         result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
     end

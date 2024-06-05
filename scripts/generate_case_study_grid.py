@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import toml
-import math 
 
 #assume gridsize = a squared number of 2^x for integers x
 def create_clusters(locations, grid_size):
@@ -48,12 +47,14 @@ def get_neighbors(loc_index, grid_size):
 
 np.random.seed(42)
 #set the gridsize you want
-gridsize = 4
+gridsize = 64
+time = 500
+year_time = 8760
 
 
 # New parameters
 locations = [f'l{i}' for i in range(1, gridsize + 1)]
-time_steps = list(range(1, 1001))
+time_steps = list(range(1, time + 1))
 
 create_clusters(locations, gridsize)
 
@@ -70,20 +71,20 @@ for i, location in enumerate(locations):
 
 # add the demand file to the grid case study
 demand_df = pd.DataFrame(demand_data, columns=['location', 'time_step', 'demand'])
-demand_df.to_csv('case_studies/grid/inputs/demand.csv', index=False)
+demand_df.to_csv(f'./case_studies/grid/{time}_steps/inputs/demand.csv', index=False)
 
 technologies = ['Gas']
 
 #Add generation availability, which is nothing as of now.
 generation_availability_data = []
 generation_availability_df = pd.DataFrame(generation_availability_data, columns=['location', 'technology', 'time_step', 'availability'])
-generation_availability_df.to_csv('case_studies/grid/inputs/generation_availability.csv', index=False)
+generation_availability_df.to_csv(f'case_studies/grid/{time}_steps/inputs/generation_availability.csv', index=False)
 
 #Add generation data
 generation_data = []
 for technology in technologies:
     for location in locations:
-        investment_cost = 23.33333
+        investment_cost = 23.33333 * (time/year_time)
         variable_cost = 0.05
         unit_capacity = 250
         ramping_rate = 0.75
@@ -91,7 +92,7 @@ for technology in technologies:
 
 # Create DataFrame for generation characteristics
 generation_df = pd.DataFrame(generation_data, columns=['technology', 'location', 'investment_cost', 'variable_cost', 'unit_capacity', 'ramping_rate'])
-generation_df.to_csv('case_studies/grid/inputs/generation.csv', index=False)
+generation_df.to_csv(f'case_studies/grid/{time}_steps/inputs/generation.csv', index=False)
 
 # Generate new transmission data
 transmission_data = []
@@ -106,11 +107,11 @@ for i, location in enumerate(locations):
         
 # Create DataFrame for transmission lines
 transmission_df = pd.DataFrame(transmission_data, columns=['from', 'to', 'export_capacity', 'import_capacity'])
-transmission_df.to_csv('case_studies/grid/inputs/transmission_lines.csv', index=False)
+transmission_df.to_csv(f'case_studies/grid/{time}_steps/inputs/transmission_lines.csv', index=False)
 
 
 # Load the existing configuration
-config_path = "./case_studies/grid/config.toml"
+config_path = f"./case_studies/grid/{time}_steps/config.toml"
 with open(config_path, 'r') as file:
     config = toml.load(file)
     
@@ -133,5 +134,5 @@ df_import = df_import.rename(columns={"import_capacity": "capacity", "from": "to
 
 df_combined = pd.concat([df_import, df_export])
 
-df_combined.to_csv("case_studies/grid/inputs/transmission_lines2.csv", index=False)
+df_combined.to_csv(f"case_studies/grid/{time}_steps/inputs/transmission_lines2.csv", index=False)
 
