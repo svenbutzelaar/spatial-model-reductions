@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import toml
+import os
 
 #assume gridsize = a squared number of 2^x for integers x
 def create_clusters(locations, grid_size):
@@ -45,8 +46,50 @@ def get_neighbors(loc_index, grid_size):
     
     return neighbors
 
+def create_tomls(path, inputpath):
+    with open(inputpath + 'scalars.toml', 'w+') as f:
+        f.write("""# Value of lost load (cost of not supplying energy) [kEUR/MWh]
+                    value_of_lost_load = 3.0
+                    # If true, an LP relaxation of the problem will be solved
+                    relaxation = false
+                    """)
+        
+    with open(path + 'config.toml', 'w+') as f:
+        f.write(f"""[input.data]
+                # input directory with the files
+                dir = "inputs"
+                demand = "demand.csv"
+                generation_availability = "generation_availability.csv"
+                generation = "generation.csv"
+                transmission_lines = "transmission_lines2.csv"
+                scalars = "scalars.toml"
+                line_capacities_bidirectional = false
+                clusters = "auto"
+                [input.sets]
+                time_steps = "auto"
+                locations = "auto"
+                transmission_lines = "auto"
+                generators = "auto"
+                [output]
+                dir = "output"
+                investment = "investment.csv"
+                production = "production.csv"
+                line_flow = "line_flow.csv"
+                loss_of_load = "loss_of_load.csv"
+                scalars = "scalars.toml"
+                                """)
+
 #generates all the instances of possible parameters
 def generate(time, yeartime, gridsize, seed):
+    folder = f'./case_studies/grid_{seed}/'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    path = folder + f'{time}_steps/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    inputpath = path + 'inputs/'
+    if not os.path.exists(inputpath):
+        os.makedirs(inputpath)
     # New parameters
 
     locations = [f'l{i}' for i in range(1, gridsize + 1)]
@@ -67,14 +110,14 @@ def generate(time, yeartime, gridsize, seed):
 
     # add the demand file to the grid case study
     demand_df = pd.DataFrame(demand_data, columns=['location', 'time_step', 'demand'])
-    demand_df.to_csv(f'./case_studies/grid_{seed}/{time}_steps/inputs/demand.csv', index=False)
+    demand_df.to_csv(inputpath + 'demand.csv', index=False)
 
     technologies = ['Gas']
 
     #Add generation availability, which is nothing as of now.
     generation_availability_data = []
     generation_availability_df = pd.DataFrame(generation_availability_data, columns=['location', 'technology', 'time_step', 'availability'])
-    generation_availability_df.to_csv(f'case_studies/grid_{seed}/{time}_steps/inputs/generation_availability.csv', index=False)
+    generation_availability_df.to_csv(inputpath + 'generation_availability.csv', index=False)
 
     #Add generation data
     generation_data = []
@@ -85,10 +128,10 @@ def generate(time, yeartime, gridsize, seed):
             unit_capacity = 250
             ramping_rate = 0.75
             generation_data.append([technology, location, investment_cost, variable_cost, unit_capacity, ramping_rate])
-
+            
     # Create DataFrame for generation characteristics
     generation_df = pd.DataFrame(generation_data, columns=['technology', 'location', 'investment_cost', 'variable_cost', 'unit_capacity', 'ramping_rate'])
-    generation_df.to_csv(f'case_studies/grid_{seed}/{time}_steps/inputs/generation.csv', index=False)
+    generation_df.to_csv(inputpath + 'generation.csv', index=False)
 
     # Generate new transmission data
     transmission_data = []
@@ -103,11 +146,12 @@ def generate(time, yeartime, gridsize, seed):
             
     # Create DataFrame for transmission lines
     transmission_df = pd.DataFrame(transmission_data, columns=['from', 'to', 'export_capacity', 'import_capacity'])
-    transmission_df.to_csv(f'case_studies/grid_{seed}/{time}_steps/inputs/transmission_lines.csv', index=False)
-
+    transmission_df.to_csv(inputpath + 'transmission_lines.csv', index=False)
+    
+    create_tomls(path, inputpath)
 
     # Load the existing configuration
-    config_path = f"./case_studies/grid_{seed}/{time}_steps/config.toml"
+    config_path = path + 'config.toml'
     with open(config_path, 'r') as file:
         config = toml.load(file)
         
@@ -129,13 +173,13 @@ def generate(time, yeartime, gridsize, seed):
 
     df_combined = pd.concat([df_import, df_export])
 
-    df_combined.to_csv(f"case_studies/grid_{seed}/{time}_steps/inputs/transmission_lines2.csv", index=False)
+    df_combined.to_csv(inputpath + 'transmission_lines2.csv', index=False)
 
 if __name__ == '__main__':
-    seed = 42
+    seed = 600
     np.random.seed(seed)
     #set the gridsize you want
-    gridsize = 64
+    gridsize = 16
     yeartime = 8760
 
     for i in range(50, 1001, 50):
