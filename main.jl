@@ -1,25 +1,48 @@
 using GenerationExpansionPlanning
 using Revise
+using DataFrames
 using Gurobi
+using CSV
+using Dates
 
-# Step 1: Read the experiment config
-@info "Reading the config"
-config_path = "case_studies/grid/config.toml"
-# config_path = "case_studies/stylized_EU/config.toml"
-# config_path = "case_studies/8_locations/config.toml"
-# config_path = "case_studies/stylized_EU_directional/config.toml"
-# config_path = "case_studies/cliques_10_5/config.toml"
-# config_path = "case_studies/grid/config.toml"
-config = read_config(config_path)
+num_runs = 5
+experiments = ["case_studies/grid/config.toml"]
 
-# Step 2: Parse the data
-@info "Parsing the config data"
-experiment_data = ExperimentData(config[:input])
+# "case_studies/stylized_EU/config.toml"
+# "case_studies/8_locations/config.toml"
+# "case_studies/stylized_EU_directional/config.toml"
+# "case_studies/cliques_10_5/config.toml"
 
-# Step 3: Run the experiments
-@info "Running the experiments defined by $config_path"
-output_config = config[:output]
-experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], output_config)
+# Run multiple experiments
+for experiment ∈ experiments
+    # Step 1: Read the experiment config
+    @info "Reading the config"
+    config = read_config(experiment)
+    # Step 2: Parse the data
+    @info "Parsing the config data"
+    experiment_data = ExperimentData(config[:input])
 
-# Step 4: Save the results
-save_result(experiment_result, output_config)
+    # Make a new results folder for this experiment
+    results_folder = "results"
+    now = Dates.now()
+    experiment_name = split(experiment, "/")[end-1]
+    prefix = Dates.format(now, "yyyyMMddHHmmss")
+    experiment_folder = joinpath(results_folder, "$prefix-$experiment_name")
+    mkpath(experiment_folder)
+
+    # Step 3: Run the experiments
+    @info "Running experiment $experiment"
+    output_config = config[:output]
+    results_df = DataFrame(run=Int16[], reduction=Bool[], objective=Float64[], runtime=Float64[])
+    
+    # Repeat the experiment num_runs
+    for run in 1:num_runs
+        @info "Executing run: $run"
+        experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], output_config, results_df, run)
+        # Save decision outputs (get overwritten for now)
+        save_result(experiment_result, output_config)
+    end
+    # Step 4: Save the results
+    CSV.write(joinpath(experiment_folder, "results.csv"), results_df)
+    @info "Exported results to $experiment_folder"  
+end 
