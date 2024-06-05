@@ -36,9 +36,9 @@ results.csv
 /case_studies/stylized_EU_directional/output
 /case_studies/stylized_EU/output
 /case_studies/8_locations/output
-/case_studies/gird/**/output
-/case_studies/gird/**/input/demand.csv
-/case_studies/gird/**/input/generation_availability.csv
-/case_studies/gird/**/input/generation.csv
-/case_studies/gird/**/input/transmission_lines.csv
-/case_studies/gird/**/input/transmission_lines2.csv
+/case_studies/grid/**/output
+/case_studies/grid/**/inputs/demand.csv
+/case_studies/grid/**/inputs/generation_availability.csv
+/case_studies/grid/**/inputs/generation.csv
+/case_studies/grid/**/inputs/transmission_lines.csv
+/case_studies/grid/**/inputs/transmission_lines2.csv
