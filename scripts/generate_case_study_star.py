@@ -1,33 +1,56 @@
-
+import random
 import os
+from math import log2, ceil
 
-import numpy as np
+def get_clusters(locations):
+    if len(locations) == 0:
+        return []
+    if len(locations) == 1:
+        return locations[0]
+    clustered_locations = []
+    for i in range(0, len(locations), 2):
+        if i + 1 >= len(locations):
+            clustered_locations.append([locations[i]])
+        else:            
+            clustered_locations.append([locations[i], locations[i+1]])
+    return get_clusters(clustered_locations)
 
-def create_clusters(n, clique_size):
-    input_list = list(f'l{i}' for i in range(n))
-    return [input_list[i:i + clique_size] for i in range(0, n, clique_size)]
 
-def create_clique_case_study(name, n, clique_size, time_steps):
+def create_middle_cluster(n):
+    return 0 if n == 0 else [create_middle_cluster(n-1)]
+    
+    
+def create_star_case_study(name, chain_length, degrees, time_steps):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
-    
-    np.random.seed(42)
 
     # Create folders
     if not os.path.exists(folder):
         os.makedirs(folder)
     if not os.path.exists(input_folder):
         os.makedirs(input_folder)
-    
 
-    assert n % clique_size == 0
-    initial_demand = np.random.uniform(3000, 8000, size=n)
+    total_locations = chain_length*degrees  + 1
+    chains = []
+    locations = [f"l{i}" for i in range(total_locations)]
+    for i in range(1, total_locations, chain_length):
+        chain = [[locations[i + x]] for x in range(chain_length)]
+        chain_clusters = get_clusters(chain)
+        chains.append(chain_clusters)
+    assert len(chains) == degrees
+    print(chains)
+    depth_chain_clusters = ceil(chain_length/2) + 1
+    print(depth_chain_clusters)
+    
+    clusters = [create_middle_cluster(depth_chain_clusters)]
+    clusters.extend(chains)
+    print(clusters)
+        
     # Demands
     demands = ["location,time_step,demand"]
-    for location in range(n):
-        for time_step in range(1, time_steps):
-            change = np.random.uniform(-500, 500)
-            demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
+    for location in range(total_locations):
+        for time_step in range(time_steps):
+            demands.append(f"l{location},{time_step},100")
 
     with open(f'{input_folder}/demand.csv', 'w+') as f:
         f.write('\n'.join(demands) + '\n')
@@ -43,44 +66,33 @@ def create_clique_case_study(name, n, clique_size, time_steps):
     # Generation
     generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
 
-    for location in range(n):
+    for location in range(total_locations):
         generation.append(f"Gas,l{location},23.33333333,0.05,250,0.75")
-    for location in range(0, n, clique_size):
-        generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
 
     with open(f'{input_folder}/generation.csv', 'w+') as f:
         f.write('\n'.join(generation) + '\n')
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
-    for clique in range(n // clique_size):
-        clique_iterator = range(clique * clique_size, (clique + 1) * clique_size)
-        transmission_lines.extend(
-            f"l{i},l{j},4000"
-            for i in clique_iterator
-            for j in clique_iterator
-            if i != j
+    for i in range(1, total_locations, chain_length):
+        transmission_lines.append(
+            f"l{0},l{i},{random.randint(1, 20) * 10}"
         )
-
-    clique_connector_iterator = range(0, n, clique_size)
-    transmission_lines.extend(
-            f"l{i},l{j},2000"
-            for i in clique_connector_iterator
-            for j in clique_connector_iterator
-            if i != j
-        )
+        for j in range(0, chain_length-1):
+            transmission_lines.append(
+                f"l{i+j},l{i+j+1},{random.randint(1, 20) * 10}"
+            )            
 
     with open(f'{input_folder}/transmission_lines2.csv', 'w+') as f:
-        f.write('\n'.join(transmission_lines) + '\n')
+        f.write("\n".join(transmission_lines))
 
     with open(f'{input_folder}/scalars.toml', 'w+') as f:
         f.write("""# Value of lost load (cost of not supplying energy) [kEUR/MWh]
 value_of_lost_load = 3.0
-
 # If true, an LP relaxation of the problem will be solved
 relaxation = false
     """)
-        
+
     with open(f'{folder}/config.toml', 'w+') as f:
         f.write(f"""[input.data]
 # input directory with the files
@@ -91,14 +103,12 @@ generation = "generation.csv"
 transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = false
-clusters = {create_clusters(n, clique_size)}
-
+clusters = {clusters}
 [input.sets]
-time_steps = {list(range(1, time_steps))}
+time_steps = "auto"
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
-
 [output]
 dir = "output"
 investment = "investment.csv"
@@ -107,6 +117,7 @@ line_flow = "line_flow.csv"
 loss_of_load = "loss_of_load.csv"
 scalars = "scalars.toml"
                 """)
-
-
-create_clique_case_study(name='cliques_10_5',n=10,clique_size=5,time_steps=8761)
+    
+chain_length = 3
+degrees = 3
+create_star_case_study(f"{chain_length}_{degrees}_star", chain_length, degrees, 100)

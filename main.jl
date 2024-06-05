@@ -8,7 +8,8 @@ config_path = "case_studies/grid/config.toml"
 # config_path = "case_studies/stylized_EU/config.toml"
 # config_path = "case_studies/8_locations/config.toml"
 # config_path = "case_studies/stylized_EU_directional/config.toml"
-# config_path = "case_studies/cliques_16_4/config.toml"
+# config_path = "case_studies/cliques_10_5/config.toml"
+config_path = "case_studies/grid/config.toml"
 config = read_config(config_path)
 
 # Step 2: Parse the data

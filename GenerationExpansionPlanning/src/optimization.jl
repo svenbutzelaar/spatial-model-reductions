@@ -7,20 +7,17 @@ export run_optimisation
 """
 function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
 
-    relaxed_experiment_result, clusters = nothing, nothing
-    # for test purposes this if statement is changed to 1 instead of 8
-    # if !isnothing(dendrogram) && (k = (length(data.locations) ÷ 2)) > 8
-    # TODO: change this back when testing is successful 
+    reduced_experiment_result, clusters = nothing, nothing
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)
-        @info "start running relaxation"
-        # data_og (original experioment data without merges) is used for merging
-        data_relaxed, clusters, dendrogram_new = relaxation_iteration(dendrogram, data_og)
-        @info "length", length(data_relaxed.locations)
-        @info "locations", data_relaxed.locations
+        @info "start running reduced instance"
+        # data_og (original experiment data without merges) is used for merging
+        data_reduced, clusters, dendrogram_new = reduction_iteration(dendrogram, data_og)
+        @info "length", length(data_reduced.locations)
+        @info "locations", data_reduced.locations
         @info "cluster", clusters
-        relaxed_experiment_result = run_optimisation(data_relaxed, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og, config, debug)
+        reduced_experiment_result = run_optimisation(data_reduced, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og, config, debug)
         if debug
-            save_result(relaxed_experiment_result, config)
+            save_result(reduced_experiment_result, config)
         end
     end
 
@@ -129,25 +126,20 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             @constraint(model, ramping[n, g, t] ≥ -ramping_rate[n, g] * investment_MW[n, g])
         end
 
-        if isa(relaxed_experiment_result, ExperimentResult)
-            relaxed_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(relaxed_experiment_result.investment)]
+        if isa(reduced_experiment_result, ExperimentResult)
+            reduced_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(reduced_experiment_result.investment)]
 
-            for relaxed_investment in relaxed_investments
-                locations_in_investment = filter(location -> is_location_in_cluster(location, relaxed_investment.location), data.locations)
+            for reduced_investment in reduced_investments
+
+                @info "locations=$(data.locations) and reduced_investment.location=$(reduced_investment.location)"
+                locations_in_investment = filter(location -> is_location_in_cluster(location, reduced_investment.location), data.locations)
+                @info "locations_in_investment=$locations_in_investment"
+                technology = reduced_investment.technology
                 @constraint(model,
-                    sum(investment[n, g] for g ∈ G, n∈locations_in_investment if (n, g) ∈ NG) >= relaxed_investment.units
+                    sum(investment[n, technology] for n ∈ locations_in_investment if (n, technology) ∈ NG) ≥ reduced_investment.units
                 )
             end
-
-            # @info relaxed_investments
-            # exit()
         end
-
-        # if lowerbound !== nothing
-        #     @info "Setting upper bound"
-        #     set_optimizer_attribute(model, "Cutoff", lowerbound)
-        # end 
-
         # 5. Solve the model
         @info "Solving the model"
         optimize!(model)
@@ -180,7 +172,5 @@ end
 function is_location_in_cluster(location::Symbol, cluster::Symbol)::Bool
     location_parts = Set(String.(split(string(location), "_")))
     cluster_parts = Set(String.(split(string(cluster), "_")))
-    
     return issubset(location_parts, cluster_parts)
-
 end

@@ -1,33 +1,44 @@
-
+import random
 import os
 
-import numpy as np
+def get_clusters(locations):
+    if len(locations) == 0:
+        return []
+    if len(locations) == 1:
+        return locations[0]
+    clustered_locations = []
+    for i in range(0, len(locations), 2):
+        if i + 1 >= len(locations):
+            clustered_locations.append([locations[i]])
+        else:            
+            clustered_locations.append([locations[i], locations[i+1]])
+    return get_clusters(clustered_locations)
 
-def create_clusters(n, clique_size):
-    input_list = list(f'l{i}' for i in range(n))
-    return [input_list[i:i + clique_size] for i in range(0, n, clique_size)]
 
-def create_clique_case_study(name, n, clique_size, time_steps):
+def create_chain_clusters(chain_length):
+    locations = []
+    for i in range(chain_length):
+        locations.append([f"l{i}"])
+    
+    return get_clusters(locations)    
+    
+    
+def create_chain_case_study(name, n, time_steps):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
-    
-    np.random.seed(42)
 
     # Create folders
     if not os.path.exists(folder):
         os.makedirs(folder)
     if not os.path.exists(input_folder):
         os.makedirs(input_folder)
-    
 
-    assert n % clique_size == 0
-    initial_demand = np.random.uniform(3000, 8000, size=n)
+
     # Demands
     demands = ["location,time_step,demand"]
     for location in range(n):
-        for time_step in range(1, time_steps):
-            change = np.random.uniform(-500, 500)
-            demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
+        for time_step in range(time_steps):
+            demands.append(f"l{location},{time_step},100")
 
     with open(f'{input_folder}/demand.csv', 'w+') as f:
         f.write('\n'.join(demands) + '\n')
@@ -45,42 +56,27 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     for location in range(n):
         generation.append(f"Gas,l{location},23.33333333,0.05,250,0.75")
-    for location in range(0, n, clique_size):
-        generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
 
     with open(f'{input_folder}/generation.csv', 'w+') as f:
         f.write('\n'.join(generation) + '\n')
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
-    for clique in range(n // clique_size):
-        clique_iterator = range(clique * clique_size, (clique + 1) * clique_size)
-        transmission_lines.extend(
-            f"l{i},l{j},4000"
-            for i in clique_iterator
-            for j in clique_iterator
-            if i != j
-        )
-
-    clique_connector_iterator = range(0, n, clique_size)
-    transmission_lines.extend(
-            f"l{i},l{j},2000"
-            for i in clique_connector_iterator
-            for j in clique_connector_iterator
-            if i != j
+    for i in range(n-1):
+        transmission_lines.append(
+            f"l{i},l{i+1},{random.randint(1, 20) * 10}"
         )
 
     with open(f'{input_folder}/transmission_lines2.csv', 'w+') as f:
-        f.write('\n'.join(transmission_lines) + '\n')
+        f.write("\n".join(transmission_lines))
 
     with open(f'{input_folder}/scalars.toml', 'w+') as f:
         f.write("""# Value of lost load (cost of not supplying energy) [kEUR/MWh]
 value_of_lost_load = 3.0
-
 # If true, an LP relaxation of the problem will be solved
 relaxation = false
     """)
-        
+
     with open(f'{folder}/config.toml', 'w+') as f:
         f.write(f"""[input.data]
 # input directory with the files
@@ -91,14 +87,12 @@ generation = "generation.csv"
 transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = false
-clusters = {create_clusters(n, clique_size)}
-
+clusters = {create_chain_clusters(n)}
 [input.sets]
-time_steps = {list(range(1, time_steps))}
+time_steps = "auto"
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
-
 [output]
 dir = "output"
 investment = "investment.csv"
@@ -107,6 +101,7 @@ line_flow = "line_flow.csv"
 loss_of_load = "loss_of_load.csv"
 scalars = "scalars.toml"
                 """)
-
-
-create_clique_case_study(name='cliques_10_5',n=10,clique_size=5,time_steps=8761)
+    
+    
+n = 5
+create_chain_case_study(f"{n}_chain", n, 100)

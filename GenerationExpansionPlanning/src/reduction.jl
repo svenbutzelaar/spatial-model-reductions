@@ -1,12 +1,11 @@
 using DataStructures
-export relaxation_iteration
+export reduction_iteration
 """
     Create clusters and returns merged Dataframes
 """
-function relaxation_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
-    # Create k clusters
+function reduction_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
     clusters, dendrogram_new = create_clusters(dendrogram)
-    @info ("CLUSTERS are made; ", clusters)
+    @info ("Clusters are made; ", clusters)
     return (merge_within_clusters(data_og, clusters), clusters, dendrogram_new)
 end
 
@@ -18,9 +17,10 @@ function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Ve
         dendrogram_new = nothing
     end
     clusters = create_clusters_merging_last_layer_rec(dendrogram)
-    # println("created clusters: $clusters")
-    # println("Dendrogram old: $dendrogram")
-    # println("dendrogram new: $dendrogram_new")
+
+    println("Created clusters: $clusters")
+    println("Dendrogram old: $dendrogram")
+    println("Dendrogram new: $dendrogram_new")
     return (clusters, dendrogram_new)
 end
 
@@ -94,13 +94,13 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
 
     @info "Dataframes of clusters merged"
 
-    relaxed_data = ExperimentData(Dict(
+    reduced_data = ExperimentData(Dict(
         :sets => set_dict,
         :data => data_dict,
         :scalars => scalars_dict
     ))
 
-    return relaxed_data
+    return reduced_data
 end
 
 function get_merged_set_dict(data::ExperimentData, cluster_symbols::Vector{Symbol}, symbol_cluster_dict::Dict{Symbol, Symbol})::Dict
