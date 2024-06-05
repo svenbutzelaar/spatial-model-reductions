@@ -10,13 +10,14 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
 
     reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
-    
+
     time = @elapsed begin
         reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, data, config, debug)
     end
     objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
     push!(results_df,  (run, true, objective, time))
 
+    @info "Running experiment not reduced"
     time = @elapsed begin
         result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, data, config, false)
     end
