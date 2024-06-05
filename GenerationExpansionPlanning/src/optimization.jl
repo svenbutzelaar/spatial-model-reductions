@@ -9,12 +9,11 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
 
     reduced_experiment_result, clusters = nothing, nothing
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)
-        @info "start running reduced instance"
-        # data_og (original experiment data without merges) is used for merging
+        @info "Running reduction iteration"
         data_reduced, clusters, dendrogram_new = reduction_iteration(dendrogram, data_og)
-        @info "length", length(data_reduced.locations)
-        @info "locations", data_reduced.locations
-        @info "cluster", clusters
+        @info "length: ", length(data_reduced.locations)
+        @info "locations: ", data_reduced.locations
+        @info "cluster: ", clusters
         reduced_experiment_result = run_optimisation(data_reduced, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og, config, debug)
         if debug
             save_result(reduced_experiment_result, config)
@@ -22,7 +21,6 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
     end
 
     # 1. Extract data into local variables
-    @info "Reading the sets"
     N = data.locations
     G = data.generation_technologies
     NG = data.generators
@@ -46,12 +44,10 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         transmission_capacity = dataframe_to_dict(data.transmission_capacities, [:from, :to], :capacity)
     end
 
-    @info "Solving the problem"
+    @info "Building the model instance"
     dt = @elapsed begin
         # 2. Add variables to the model
-        @info "Populating the model"
         model = JuMP.Model(optimizer_factory)
-        @info "Adding the variables"
         @variable(model, 0 ≤ total_investment_cost)
         @variable(model, 0 ≤ total_operational_cost)
         @variable(model, 0 ≤ investment[n ∈ N, g ∈ G; (n, g) ∈ NG], integer = !data.relaxation)
@@ -72,16 +68,12 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         end
         @variable(model, 0 ≤ loss_of_load[n ∈ N, t ∈ T] ≤ demand[n, t])
 
-        @info "Precomputing expressions"
         investment_MW = @expression(model, [n ∈ N, g ∈ G; (n, g) ∈ NG], unit_capacity[n, g] * investment[n, g])
 
         # 3. Add an objective to the model
-        @info "Adding the objective"
         @objective(model, Min, total_investment_cost + total_operational_cost)
 
         # 4. Add constraints to the model
-        @info "Adding the constraints"
-        @info "Adding the cost constraints"
         @constraint(model, total_investment_cost == sum(investment_cost[n, g] * investment_MW[n, g] for (n, g) ∈ NG))
         @constraint(model,
             total_operational_cost
@@ -92,7 +84,6 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         )
 
         # Node balance
-        @info "Adding the balance constraints"
         @constraint(model, [n ∈ N, t ∈ T],
             sum(production[n, g, t] for g ∈ G if (n, g) ∈ NG)
             +
@@ -106,7 +97,6 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         )
 
         # Maximum production
-        @info "Adding the maximum production constraints"
         # for technologies without the availability profile, the availability is 
         # always equal to 100%, that is, 1.0. This is why we use
         # get(generation_availability, (n, g, t), 1.0) and not
@@ -115,7 +105,6 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             production[n, g, t] ≤ get(generation_availability, (n, g, t), 1.0) * investment_MW[n, g]
         )
 
-        @info "Adding the ramping constraints"
         ramping = @expression(model, [n ∈ N, g ∈ G, t ∈ T; t > 1 && (n, g) ∈ NG],
             production[n, g, t] - production[n, g, t-1]
         )

@@ -5,8 +5,18 @@ using Gurobi
 using CSV
 using Dates
 
-num_runs = 5
-experiments = ["case_studies/grid/config.toml"]
+num_runs = 2
+experiments = [
+    # "case_studies/grid_42/50_steps/config.toml",
+    # "case_studies/grid_42/100_steps/config.toml",
+    # "case_studies/grid_42/150_steps/config.toml",
+    # "case_studies/grid_42/200_steps/config.toml",
+    # "case_studies/grid_42/250_steps/config.toml",
+    "case_studies/grid_42/300_steps/config.toml",
+    "case_studies/grid_42/350_steps/config.toml",
+    "case_studies/grid_42/400_steps/config.toml",
+    "case_studies/grid_42/450_steps/config.toml",
+    "case_studies/grid_42/500_steps/config.toml"]
 
 # "case_studies/stylized_EU/config.toml"
 # "case_studies/8_locations/config.toml"
@@ -25,13 +35,13 @@ for experiment ∈ experiments
     # Make a new results folder for this experiment
     results_folder = "results"
     now = Dates.now()
-    experiment_name = split(experiment, "/")[end-1]
-    prefix = Dates.format(now, "yyyyMMddHHmmss")
+    experiment_name = join(split(experiment, "/")[2:end-1], "_")
+    prefix = Dates.format(now, "yyyymmddHHMMSS")
     experiment_folder = joinpath(results_folder, "$prefix-$experiment_name")
     mkpath(experiment_folder)
 
     # Step 3: Run the experiments
-    @info "Running experiment $experiment"
+    @info "Running experiment: $experiment"
     output_config = config[:output]
     results_df = DataFrame(run=Int16[], reduction=Bool[], objective=Float64[], runtime=Float64[])
     
@@ -44,5 +54,5 @@ for experiment ∈ experiments
     end
     # Step 4: Save the results
     CSV.write(joinpath(experiment_folder, "results.csv"), results_df)
-    @info "Exported results to $experiment_folder"  
+    @info "Exported results to: $experiment_folder"  
 end 
