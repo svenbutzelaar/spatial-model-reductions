@@ -2,14 +2,13 @@
 import os
 
 import numpy as np
+import pandas as pd
+
+from technologies import add_generation_and_generation_availability
 
 def create_clusters(n, clique_size):
     input_list = list(f'l{i}' for i in range(n))
     return [input_list[i:i + clique_size] for i in range(0, n, clique_size)]
-
-def get_list_technologies_distribution(n, p):
-    "generates a list of random ones and zeros for length n where chance of being one is p"
-    return np.random.binomial(1, p, size=n)
 
 def create_clique_case_study(name, n, clique_size, time_steps):
     folder = f'case_studies/{name}'
@@ -37,33 +36,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
         f.write('\n'.join(demands) + '\n')
 
 
-    # Generation availability
-    generation_av = ["location,technology,time_step,availability"]
-    # TODO add generation availability
-    with open(f'{input_folder}/generation_availability.csv', 'w+') as f:
-        f.write('\n'.join(generation_av) + '\n')
-
-
-    # Generation
-    generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
-
-    for location in range(n):
-        generation.append(f"Gas,l{location},23.33333333,0.05,250,0.75")
-
-    prob = get_list_technologies_distribution(n, 9/20)
-    for location in range(0, n):
-        if prob[location]:
-            generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
-
-    prob = get_list_technologies_distribution(n, 9/20)
-    for location in range(0, n):
-        if prob[location]:
-            generation.append(f"Oil,l{location},24.16666667,0.2,100,0.9")
-
-    
-
-    with open(f'{input_folder}/generation.csv', 'w+') as f:
-        f.write('\n'.join(generation) + '\n')
+    add_generation_and_generation_availability(n, name, time_steps)
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
