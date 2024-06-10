@@ -119,10 +119,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
             reduced_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(reduced_experiment_result.investment)]
 
             for reduced_investment in reduced_investments
-
-                @info "locations=$(data.locations) and reduced_investment.location=$(reduced_investment.location)"
                 locations_in_investment = filter(location -> is_location_in_cluster(location, reduced_investment.location), data.locations)
-                @info "locations_in_investment=$locations_in_investment"
                 technology = reduced_investment.technology
                 @constraint(model,
                     sum(investment[n, technology] for n ∈ locations_in_investment if (n, technology) ∈ NG) ≥ reduced_investment.units

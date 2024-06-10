@@ -1,0 +1,5 @@
+location,technology,capacity,units
+l3_l0_l2_l1,Gas,1250.0,5
+l3_l0_l2_l1,Nuclear,25000.0,25
+l7_l5_l4_l6,Gas,500.0,2
+l7_l5_l4_l6,Nuclear,19000.0,19
