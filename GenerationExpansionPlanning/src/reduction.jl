@@ -5,7 +5,7 @@ export reduction_iteration
 """
 function reduction_iteration(dendrogram::Vector, data_og::ExperimentData)::Tuple{ExperimentData, Vector{Set{Symbol}}, Union{Nothing, Vector}}
     clusters, dendrogram_new = create_clusters(dendrogram)
-    @info ("Clusters are made; ", clusters)
+    @info ("Clusters are made: ", clusters)
     return (merge_within_clusters(data_og, clusters), clusters, dendrogram_new)
 end
 
@@ -17,10 +17,6 @@ function create_clusters(dendrogram::Vector)::Tuple{Vector{Set{Symbol}},Union{Ve
         dendrogram_new = nothing
     end
     clusters = create_clusters_merging_last_layer_rec(dendrogram)
-
-    println("Created clusters: $clusters")
-    println("Dendrogram old: $dendrogram")
-    println("Dendrogram new: $dendrogram_new")
     return (clusters, dendrogram_new)
 end
 
@@ -87,12 +83,8 @@ function merge_within_clusters(data::ExperimentData, clusters::Vector{Set{Symbol
     
     # Get aggregated set and data dicts
     set_dict = get_merged_set_dict(data, cluster_symbols, symbol_cluster_dict)
-    # @info set_dict
     data_dict = get_merged_data_dict(data, clusters, cluster_symbols)
-    # @info data_dict
     scalars_dict = Dict(:value_of_lost_load => data.value_of_lost_load, :relaxation => data.relaxation)
-
-    @info "Dataframes of clusters merged"
 
     reduced_data = ExperimentData(Dict(
         :sets => set_dict,
