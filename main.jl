@@ -5,18 +5,35 @@ using Gurobi
 using CSV
 using Dates
 
-num_runs = 2
+num_runs = 5
 experiments = [
     # "case_studies/grid_42/50_steps/config.toml",
     # "case_studies/grid_42/100_steps/config.toml",
     # "case_studies/grid_42/150_steps/config.toml",
     # "case_studies/grid_42/200_steps/config.toml",
     # "case_studies/grid_42/250_steps/config.toml",
-    "case_studies/grid_42/300_steps/config.toml",
-    "case_studies/grid_42/350_steps/config.toml",
-    "case_studies/grid_42/400_steps/config.toml",
-    "case_studies/grid_42/450_steps/config.toml",
-    "case_studies/grid_42/500_steps/config.toml"]
+    # "case_studies/grid_42/300_steps/config.toml",
+    # "case_studies/grid_42/350_steps/config.toml",
+    # "case_studies/grid_42/400_steps/config.toml",
+    # "case_studies/grid_42/450_steps/config.toml",
+    # "case_studies/grid_42/500_steps/config.toml"
+    "case_studies/cliques_size4_24steps/inputs/config.toml",
+    "case_studies/cliques_size4_24steps/inputs/config.toml",
+    "case_studies/cliques_size8_24steps/inputs/config.toml",
+    "case_studies/cliques_size16_24steps/inputs/config.toml",
+    "case_studies/cliques_size32_24steps/inputs/config.toml",
+    "case_studies/cliques_size4_168steps/inputs/config.toml",
+    "case_studies/cliques_size8_168steps/inputs/config.toml",
+    "case_studies/cliques_size16_168steps/inputs/config.toml",
+    "case_studies/cliques_size32_168steps/inputs/config.toml",
+    "case_studies/cliques_size4_720steps/inputs/config.toml",
+    "case_studies/cliques_size8_720steps/inputs/config.toml",
+    "case_studies/cliques_size16_720steps/inputs/config.toml",
+    "case_studies/cliques_size32_720steps/inputs/config.toml",
+    "case_studies/cliques_size4_2160steps/inputs/config.toml",
+    "case_studies/cliques_size8_2160steps/inputs/config.toml",
+    "case_studies/cliques_size16_2160steps/inputs/config.toml",
+    "case_studies/cliques_size32_2160steps/inputs/config.toml"]
 
 # "case_studies/stylized_EU/config.toml"
 # "case_studies/8_locations/config.toml"

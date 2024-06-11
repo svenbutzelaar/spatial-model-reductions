@@ -9,6 +9,8 @@ def create_clusters(n, clique_size):
 def create_clique_case_study(name, n, clique_size, time_steps):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
+    input_folder_extra = f'{folder}/inputs/config.toml'
+    print(input_folder_extra)
 
     # Create folders
     if not os.path.exists(folder):
@@ -112,5 +114,5 @@ n = 64
 clique_sizes = [4, 8, 16, 32]
 for t in time_steps:
     for clique_size in clique_sizes:
-       name = 'cliques_size{clique_size}_{t}steps' 
-create_clique_case_study(name,n,clique_size,t)
+       name = f"cliques_size{clique_size}_{t}steps"
+       create_clique_case_study(name,n,clique_size,t)
