@@ -24,7 +24,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
     # Demands
     demands = ["location,time_step,demand"]
     for location in range(n):
-        for time_step in range(1, time_steps):
+        for time_step in range(1, time_steps+1):
             change = np.random.uniform(-500, 500)
             demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
 
@@ -94,7 +94,7 @@ line_capacities_bidirectional = false
 clusters = {create_clusters(n, clique_size)}
 
 [input.sets]
-time_steps = {list(range(1, time_steps))}
+time_steps = {list(range(1, time_steps+1))}
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
