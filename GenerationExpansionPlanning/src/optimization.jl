@@ -1,11 +1,11 @@
 export run_optimisation
 
 """
-    run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Vector)::ExperimentResult
+    run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, bound_alpha_factor::float, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, bound_alpha_factor, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
 
     reduced_experiment_result, clusters = nothing, nothing
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)
@@ -14,7 +14,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
         @info "length: ", length(data_reduced.locations)
         @info "locations: ", data_reduced.locations
         @info "cluster: ", clusters
-        reduced_experiment_result = run_optimisation(data_reduced, optimizer_factory, line_capacities_bidirectional, dendrogram_new, data_og, config, debug)
+        reduced_experiment_result = run_optimisation(data_reduced, optimizer_factory, line_capacities_bidirectional, dendrogram_new, bound_alpha_factor, data_og, config, debug)
         if debug
             save_result(reduced_experiment_result, config)
         end
@@ -122,7 +122,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
                 locations_in_investment = filter(location -> is_location_in_cluster(location, reduced_investment.location), data.locations)
                 technology = reduced_investment.technology
                 @constraint(model,
-                    sum(investment[n, technology] for n ∈ locations_in_investment if (n, technology) ∈ NG) ≥ reduced_investment.units
+                    sum(investment[n, technology] for n ∈ locations_in_investment if (n, technology) ∈ NG) ≥ reduced_investment.units * bound_alpha_factor
                 )
             end
         end

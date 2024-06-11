@@ -10,13 +10,15 @@ experiments = [
     # "case_studies/grid_42/50_steps/config.toml",
     # "case_studies/grid_42/100_steps/config.toml",
     # "case_studies/grid_42/150_steps/config.toml",
-    # "case_studies/grid_42/200_steps/config.toml",
-    # "case_studies/grid_42/250_steps/config.toml",
-    "case_studies/grid_42/300_steps/config.toml",
-    "case_studies/grid_42/350_steps/config.toml",
-    "case_studies/grid_42/400_steps/config.toml",
-    "case_studies/grid_42/450_steps/config.toml",
-    "case_studies/grid_42/500_steps/config.toml"]
+    "case_studies/cliques/small/config.toml",
+    "case_studies/grid_42/200_steps/config.toml",
+
+    # "case_studies/grid_42/300_steps/config.toml",
+    # "case_studies/grid_42/350_steps/config.toml",
+    # "case_studies/grid_42/400_steps/config.toml",
+    # "case_studies/grid_42/450_steps/config.toml",
+    # "case_studies/grid_42/500_steps/config.toml"
+    ]
 
 # "case_studies/stylized_EU/config.toml"
 # "case_studies/8_locations/config.toml"
@@ -43,12 +45,13 @@ for experiment ∈ experiments
     # Step 3: Run the experiments
     @info "Running experiment: $experiment"
     output_config = config[:output]
-    results_df = DataFrame(run=Int16[], reduction=Bool[], objective=Float64[], runtime=Float64[])
+    results_df = DataFrame(run=Int16[], reduction=Bool[], objective=Float64[], runtime=Float64[], n=Int16[], time_steps=Int16[], bound_alpha_factor=Float16[])
     
     # Repeat the experiment num_runs
     for run in 1:num_runs
         @info "Executing run: $run"
-        experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], output_config, results_df, run)
+        time_steps = length(config[:input][:sets][:time_steps])
+        experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], config[:bound_alpha_factor], output_config, results_df, run, time_steps)
         # Save decision outputs (get overwritten for now)
         save_result(experiment_result, output_config)
     end

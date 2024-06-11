@@ -79,9 +79,10 @@ transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = false
 clusters = {create_clusters(n, clique_size)}
+bound_alpha_factor = 0.9
 
 [input.sets]
-time_steps = {list(range(1, time_steps))}
+time_steps = {list(range(1, time_steps + 1))}
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
@@ -96,4 +97,8 @@ scalars = "scalars.toml"
                 """)
 
 
-create_clique_case_study(name='cliques-8761_steps',n=10,clique_size=5,time_steps=8761)
+n = 10
+cs = 5
+t = 10
+alpha = 0.9
+create_clique_case_study(name=f'cliques/{n}_{cs}_{t}_{alpha}',n=n,clique_size=cs,time_steps=t, bound_alpha_factor=alpha)
