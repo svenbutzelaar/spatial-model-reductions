@@ -44,7 +44,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     for location in range(n):
         annual_inv = 23.33333 * time_steps / 8760
-        generation.append(f"Gas,l{location},annual_inv,0.05,250,0.75")
+        generation.append(f"Gas,l{location},{annual_inv},0.05,250,0.75")
     # for location in range(0, n, clique_size):
     #     generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
 
@@ -111,7 +111,7 @@ scalars = "scalars.toml"
 np.random.seed(42)
 time_steps = [24, 168, 720, 2160]
 n = 64
-clique_sizes = [4, 8, 16, 32]
+clique_sizes = [4, 8, 16]
 for t in time_steps:
     for clique_size in clique_sizes:
        name = f"cliques_size{clique_size}_{t}steps"
