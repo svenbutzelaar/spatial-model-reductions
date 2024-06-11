@@ -10,8 +10,8 @@ experiments = [
     # "case_studies/grid_42/50_steps/config.toml",
     # "case_studies/grid_42/100_steps/config.toml",
     # "case_studies/grid_42/150_steps/config.toml",
-    "case_studies/cliques/small/config.toml",
-    "case_studies/grid_42/200_steps/config.toml",
+    "case_studies/cliques/16_4_48_0.9/config.toml",
+    # "case_studies/grid_42/200_steps/config.toml",
 
     # "case_studies/grid_42/300_steps/config.toml",
     # "case_studies/grid_42/350_steps/config.toml",

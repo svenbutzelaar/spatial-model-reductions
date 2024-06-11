@@ -5,7 +5,7 @@ export run_optimisation
 
     create and optimize model. line_capacities_bidirectional is used to specify whether you ar using bidirectional capacity lines or directional
 """
-function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, bound_alpha_factor, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
+function run_optimisation(data::ExperimentData, optimizer_factory, line_capacities_bidirectional::Bool, dendrogram::Union{Vector, Nothing}, bound_alpha_factor::Float64, data_og::ExperimentData, config::Dict{Symbol,Any}, debug::Bool)::ExperimentResult
 
     reduced_experiment_result, clusters = nothing, nothing
     if !(dendrogram isa Vector{Symbol}) && !isnothing(dendrogram)

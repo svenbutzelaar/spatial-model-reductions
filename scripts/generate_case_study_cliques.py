@@ -10,7 +10,7 @@ def create_clusters(n, clique_size):
     input_list = list(f'l{i}' for i in range(n))
     return [input_list[i:i + clique_size] for i in range(0, n, clique_size)]
 
-def create_clique_case_study(name, n, clique_size, time_steps):
+def create_clique_case_study(name, n, clique_size, time_steps, bound_alpha_factor):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
     
@@ -28,7 +28,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
     # Demands
     demands = ["location,time_step,demand"]
     for location in range(n):
-        for time_step in range(1, time_steps):
+        for time_step in range(1, time_steps + 1):
             change = np.random.uniform(-500, 500)
             demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
 
@@ -79,7 +79,7 @@ transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = false
 clusters = {create_clusters(n, clique_size)}
-bound_alpha_factor = 0.9
+bound_alpha_factor = {bound_alpha_factor}
 
 [input.sets]
 time_steps = {list(range(1, time_steps + 1))}
@@ -97,8 +97,10 @@ scalars = "scalars.toml"
                 """)
 
 
-n = 10
-cs = 5
-t = 10
+n = 16
+cs = 4
+t = 48
 alpha = 0.9
-create_clique_case_study(name=f'cliques/{n}_{cs}_{t}_{alpha}',n=n,clique_size=cs,time_steps=t, bound_alpha_factor=alpha)
+name = f'cliques/{n}_{cs}_{t}_{alpha}'
+create_clique_case_study(name=name,n=n,clique_size=cs,time_steps=t, bound_alpha_factor=alpha)
+print(f'    "case_studies/{name}/config.toml",')
