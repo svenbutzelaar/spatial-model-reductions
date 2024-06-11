@@ -1,10 +1,6 @@
-
 import os
 
 import numpy as np
-import pandas as pd
-
-from technologies import add_generation_and_generation_availability
 
 def create_clusters(n, clique_size):
     input_list = list(f'l{i}' for i in range(n))
@@ -13,8 +9,6 @@ def create_clusters(n, clique_size):
 def create_clique_case_study(name, n, clique_size, time_steps):
     folder = f'case_studies/{name}'
     input_folder = f'{folder}/inputs'
-    
-    np.random.seed(42)
 
     # Create folders
     if not os.path.exists(folder):
@@ -36,14 +30,31 @@ def create_clique_case_study(name, n, clique_size, time_steps):
         f.write('\n'.join(demands) + '\n')
 
 
-    add_generation_and_generation_availability(n, name, time_steps)
+    # Generation availability
+    generation_av = ["location,technology,time_step,availability"]
+    # TODO add generation availability
+    with open(f'{input_folder}/generation_availability.csv', 'w+') as f:
+        f.write('\n'.join(generation_av) + '\n')
+
+
+    # Generation
+    generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
+
+    for location in range(n):
+        annual_inv = 23.33333 * time_steps / 8760
+        generation.append(f"Gas,l{location},annual_inv,0.05,250,0.75")
+    # for location in range(0, n, clique_size):
+    #     generation.append(f"Nuclear,l{location},68.66666667,0.01,1000,0.2")
+
+    with open(f'{input_folder}/generation.csv', 'w+') as f:
+        f.write('\n'.join(generation) + '\n')
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
     for clique in range(n // clique_size):
         clique_iterator = range(clique * clique_size, (clique + 1) * clique_size)
         transmission_lines.extend(
-            f"l{i},l{j},4000"
+            f"l{i},l{j},{np.random.uniform(500,5000)}"
             for i in clique_iterator
             for j in clique_iterator
             if i != j
@@ -51,7 +62,7 @@ def create_clique_case_study(name, n, clique_size, time_steps):
 
     clique_connector_iterator = range(0, n, clique_size)
     transmission_lines.extend(
-            f"l{i},l{j},2000"
+            f"l{i},l{j},{np.random.uniform(500,5000)}"
             for i in clique_connector_iterator
             for j in clique_connector_iterator
             if i != j
@@ -95,5 +106,11 @@ loss_of_load = "loss_of_load.csv"
 scalars = "scalars.toml"
                 """)
 
-
-create_clique_case_study(name='cliques-8761_steps',n=10,clique_size=5,time_steps=8761)
+np.random.seed(42)
+time_steps = [24, 168, 720, 2160]
+n = 64
+clique_sizes = [4, 8, 16, 32]
+for t in time_steps:
+    for clique_size in clique_sizes:
+       name = 'cliques_size{clique_size}_{t}steps' 
+create_clique_case_study(name,n,clique_size,t)
