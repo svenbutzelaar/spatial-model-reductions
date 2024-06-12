@@ -7,13 +7,13 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     # Use debug = true if you want every intermediate step to be written to your output file
     debug = false
 
-    # @info "Running reduced instance"
-    # time = @elapsed begin
-    #     @info dendrogram
-    #     reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, bound_alpha_factor, data, config, debug)
-    # end
-    # objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
-    # push!(results_df,  (run, true, objective, time, length(data.locations), time_steps, bound_alpha_factor))
+    @info "Running reduced instance"
+    time = @elapsed begin
+        @info dendrogram
+        reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, bound_alpha_factor, data, config, debug)
+    end
+    objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
+    push!(results_df,  (run, true, objective, time, length(data.locations), time_steps, bound_alpha_factor))
 
     @info "Running original instance"
     time = @elapsed begin

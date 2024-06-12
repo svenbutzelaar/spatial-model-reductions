@@ -13,7 +13,7 @@ def generate_grid_graph(n, m):
 def import_graph():
     df = pd.read_csv('case_studies/stylized_eu/inputs/transmission_lines.csv')
     G = nx.from_pandas_edgelist(df, 'from', 'to')
-    return nx.relabel_nodes(G, {node: f"'{node}'" for node in G.nodes})
+    return G # nx.relabel_nodes(G, {node: f"'{node}'" for node in G.nodes})
 
 
 def plot_graph(G):
@@ -154,7 +154,7 @@ def get_reduction_string(G):
     return f"[{','.join([str(n) for n in nodes])}]"
 
 
-def auto_combined_reduce():
+def auto_combined_reduce(G):
     loop = True
     while loop:
         reduced_parts = combined_reduce(G, 8)
