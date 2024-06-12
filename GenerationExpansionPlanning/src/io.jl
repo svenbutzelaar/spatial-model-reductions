@@ -96,6 +96,11 @@ function read_config(config_path::AbstractString)::Dict{Symbol,Any}
 
     config[:output][:dir] = (config_dir, config[:output][:dir]) |> joinpath |> abspath
     config[:line_capacities_bidirectional] = data_config[:line_capacities_bidirectional]
+    if haskey(data_config, :bound_alpha_factor)
+        config[:bound_alpha_factor] = data_config[:bound_alpha_factor]
+    else
+        config[:bound_alpha_factor] = 1.0
+    end
     config[:cluster_tree] = convert_to_symbols(data_config[:clusters])
 
     return config
