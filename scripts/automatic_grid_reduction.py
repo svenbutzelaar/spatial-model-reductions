@@ -12,7 +12,8 @@ def generate_grid_graph(n, m):
 
 def import_graph():
     df = pd.read_csv('case_studies/stylized_eu/inputs/transmission_lines.csv')
-    return nx.from_pandas_edgelist(df, 'from', 'to')
+    G = nx.from_pandas_edgelist(df, 'from', 'to')
+    return nx.relabel_nodes(G, {node: f"'{node}'" for node in G.nodes})
 
 
 def plot_graph(G):
@@ -29,6 +30,12 @@ def get_num_individuals(node):
 def get_total_num_individuals(clique):
     # for each clique node, find the number of individuals and sum those
     return sum([get_num_individuals(node) for node in clique])
+
+
+def is_special_star(G):
+    degrees = sorted([entry[1] for entry in G.degree()])
+    special_number = len(degrees) - 1
+    return G.number_of_edges() == special_number and degrees[-1] == special_number
 
 
 def find_cycle(G, v, visited, path, length):
@@ -93,7 +100,7 @@ def grid_reduce(G, k=4):
     return found_grids
 
 
-def clique_reduce(G, max_clique_size):
+def clique_reduce(G, max_clique_size=8):
     found_cliques = []
     nodes_used = set()
     all_cliques = list(nx.find_cliques(G))
@@ -110,34 +117,10 @@ def clique_reduce(G, max_clique_size):
                 nodes_used.update(clique)
     return found_cliques
 
-
 def combined_reduce(G, max_clique_size):
     # keep working copy of graph
     G_ = G.copy()
 
-    # find chains
-    found_chain_parts = chain_reduce(G_)
-    for chain_part in found_chain_parts:
-        merge(G, chain_part)
-        G_.remove_nodes_from(chain_part)
-
-    # find grids
-    found_grids = grid_reduce(G_)
-    for grid in found_grids:
-        merge(G, grid)
-        G_.remove_nodes_from(grid)
-
-    # find cliques
-    found_cliques = clique_reduce(G_, max_clique_size)
-    for clique in found_cliques:
-        merge(G, clique)
-        G_.remove_nodes_from(clique)
-
-
-def combined_reduce_2(G, max_clique_size):
-    # keep working copy of graph
-    G_ = G.copy()
-
     # find cliques
     found_cliques = clique_reduce(G_, max_clique_size)
     for clique in found_cliques:
@@ -156,12 +139,7 @@ def combined_reduce_2(G, max_clique_size):
         merge(G, grid)
         G_.remove_nodes_from(grid)
 
-
-# Generate and plot the grid graph
-# Define the dimensions of the grid
-# n = 6  # number of rows
-# m = 8  # number of columns
-# G = generate_grid_graph(n, m)
+    return found_cliques + found_chain_parts + found_grids
 
 
 # Import a graph
@@ -171,6 +149,42 @@ G = import_graph()
 plot_graph(G)
 
 
-for i in range(2):
-    combined_reduce(G, 8)
-    plot_graph(G)
+def get_reduction_string(G):
+    nodes = G.nodes()
+    return f"[{','.join([str(n) for n in nodes])}]"
+
+
+def auto_combined_reduce():
+    loop = True
+    while loop:
+        reduced_parts = combined_reduce(G, 8)
+        if len(reduced_parts) == 0:
+            loop = False
+        else:
+            plot_graph(G)
+            print(f"{get_reduction_string(G)}\n")
+
+
+def auto_single_reduce(reduction_method):
+    loop = True
+    while loop:
+        found_parts = reduction_method(G)
+        if len(found_parts) == 0:
+            loop = False
+        else:
+            for part in found_parts:
+                merge(G, part)
+            plot_graph(G)
+            print(f"{get_reduction_string(G)}\n")
+
+
+auto_single_reduce(clique_reduce)
+
+# if is_special_star(G):
+#     nodes = G.nodes()
+#     if len(nodes) > 1:
+#         new_node_id = f"[{','.join([str(n) for n in nodes])}]"
+#         G.clear()
+#         G.add_node(new_node_id)
+#         plot_graph(G)
+#         print(f"{get_reduction_string(G)}\n")
