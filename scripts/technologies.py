@@ -67,7 +67,7 @@ def add_gen_av(n, time_steps, generation_av, mean, std, tech, p, df):
 
     prob = get_list_technologies_distribution(n, p)
     for i in range(n):
-        for time_step in range(1, time_steps):
+        for time_step in range(1, time_steps + 1):
             if prob[i]:
                 if tech == 'SunPV':
                     mean = df.iloc[[time_step % 24]]["mean"].item()
