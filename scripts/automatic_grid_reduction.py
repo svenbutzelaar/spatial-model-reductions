@@ -61,7 +61,7 @@ def chain_reduce(G):
     found_parts = []
     deg_1_nodes = [node for node, degree in G.degree() if degree == 1]
     # make sure composed nodes with fewer individuals are considered first
-    deg_1_nodes = sorted(deg_1_nodes, key=get_num_individuals)
+    # deg_1_nodes = sorted(deg_1_nodes, key=get_num_individuals)
     while len(deg_1_nodes) > 0:
         chain = []
         v = deg_1_nodes[0]
@@ -83,8 +83,8 @@ def grid_reduce(G, k=4):
     G_ = G.copy()
     while G_.number_of_nodes() > 0:
         # make sure composed nodes with fewer individuals are considered first
-        sorted_nodes = sorted(G_.nodes(), key=get_num_individuals)
-        v = list(sorted_nodes)[0]
+        # sorted_nodes = sorted(G_.nodes(), key=get_num_individuals)
+        v = list(G_.nodes())[0]
         cycle = find_cycle(G_, v, set([v]), [v], k)
         if cycle is not None:
             found_grids.append(cycle)
@@ -102,7 +102,7 @@ def clique_reduce(G, max_clique_size):
         k = max_clique_size - i
         cliques = [clique for clique in all_cliques if len(clique) == k]
         # make sure cliques with fewer individuals are considered first
-        cliques = sorted(cliques, key=get_total_num_individuals)
+        # cliques = sorted(cliques, key=get_total_num_individuals)
         for clique in cliques:
             # make sure the clique is disjoint from earlier discovered cliques
             if not any(node in nodes_used for node in clique):
@@ -172,5 +172,5 @@ plot_graph(G)
 
 
 for i in range(2):
-    combined_reduce_2(G, 8)
+    combined_reduce(G, 8)
     plot_graph(G)
