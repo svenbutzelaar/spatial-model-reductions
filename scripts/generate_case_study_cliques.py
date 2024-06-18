@@ -1,5 +1,5 @@
 import os
-
+from technologies import *
 import numpy as np
 
 def create_clusters(n, clique_size):
@@ -50,6 +50,8 @@ def create_clique_case_study(name, n, clique_size, time_steps, bound_alpha_facto
 
     with open(f'{input_folder}/generation.csv', 'w+') as f:
         f.write('\n'.join(generation) + '\n')
+
+    # add_generation_and_generation_availability(n, name, time_steps)
 
     # transmission_lines
     transmission_lines = ["from,to,capacity"]
@@ -115,5 +117,5 @@ n = 64
 clique_sizes = [4, 8, 16]
 for t in time_steps:
     for clique_size in clique_sizes:
-       name = f"cliques_size{clique_size}_{t}steps"
-       create_clique_case_study(name,n,clique_size,t)
+        name = f"cliques_s_size_{clique_size}_{t}_steps"
+        create_clique_case_study(name,n,clique_size,t, 0.9)

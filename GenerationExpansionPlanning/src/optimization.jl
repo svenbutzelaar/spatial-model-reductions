@@ -117,7 +117,7 @@ function run_optimisation(data::ExperimentData, optimizer_factory, line_capaciti
 
         if isa(reduced_experiment_result, ExperimentResult)
             reduced_investments = [Investment(row["location"], row["technology"], row["capacity"], row["units"]) for row in eachrow(reduced_experiment_result.investment)]
-
+            
             for reduced_investment in reduced_investments
                 locations_in_investment = filter(location -> is_location_in_cluster(location, reduced_investment.location), data.locations)
                 technology = reduced_investment.technology
