@@ -5,15 +5,24 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
     @assert line_capacities_bidirectional == false "TODO reductions are only possible with directional line capacities right now. try running case_studies/stylized_EU_directional"
     
     # Use debug = true if you want every intermediate step to be written to your output file
-    debug = false
+    debug = true
 
-    # @info "Running reduced instance"
-    # time = @elapsed begin
-    #     @info dendrogram
-    #     reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, bound_alpha_factor, data, config, debug)
-    # end
-    # objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
-    # push!(results_df,  (run, true, objective, time, length(data.locations), time_steps, bound_alpha_factor))
+    @info "Running reduced instance alpha 1.0"
+    time = @elapsed begin
+        @info dendrogram
+        reduced_result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, 1.0, data, config, debug)
+    end
+    
+    objective = reduced_result.total_investment_cost + reduced_result.total_operational_cost
+    push!(results_df,  (run, true, objective, time, length(data.locations), time_steps, 1.0))
+
+    @info "Running reduced instance alpha 0.9"
+    time = @elapsed begin
+        @info dendrogram
+        reduced_result_2 = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, dendrogram, 0.9, data, config, debug)
+    end
+    objective = reduced_result_2.total_investment_cost + reduced_result_2.total_operational_cost
+    push!(results_df,  (run, true, objective, time, length(data.locations), time_steps, 0.9))
 
     @info "Running original instance"
     time = @elapsed begin

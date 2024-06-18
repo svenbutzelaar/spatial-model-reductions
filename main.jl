@@ -7,23 +7,44 @@ using Dates
 
 num_runs = 2
 experiments = [
-    # "case_studies/grid_42/50_steps/config.toml",
-    # "case_studies/grid_42/100_steps/config.toml",
-    # "case_studies/grid_42/150_steps/config.toml",
-    "case_studies/cliques/16_4_48_0.9/config.toml",
-    # "case_studies/grid_42/200_steps/config.toml",
-
-    # "case_studies/grid_42/300_steps/config.toml",
-    # "case_studies/grid_42/350_steps/config.toml",
-    # "case_studies/grid_42/400_steps/config.toml",
-    # "case_studies/grid_42/450_steps/config.toml",
-    # "case_studies/grid_42/500_steps/config.toml"
+    "case_studies/cliques_size4_24steps/config.toml",
+    # "case_studies/cliques_size4_24steps/config.toml",
+    # "case_studies/cliques_size8_24steps/config.toml",
+    # "case_studies/cliques_size16_24steps/config.toml",
+    # "case_studies/cliques_size4_168steps/config.toml",
+    # "case_studies/cliques_size8_168steps/config.toml",
+    # "case_studies/cliques_size16_168steps/config.toml",
+    # "case_studies/cliques_size4_720steps/config.toml",
+    # "case_studies/cliques_size8_720steps/config.toml",
+    # "case_studies/cliques_size16_720steps/config.toml",
+    # "case_studies/cliques_size4_2160steps/config.toml",
+    # "case_studies/cliques_size8_2160steps/config.toml",
+    # "case_studies/cliques_size16_2160steps/config.toml"
+    # "case_studies/cliques_s_size_4_24_steps/config.toml",
+    # "case_studies/cliques_s_size_8_24_steps/config.toml",
+    # "case_studies/cliques_s_size_16_24_steps/config.toml",
+    # "case_studies/cliques_s_size_4_168_steps/config.toml",
+    # "case_studies/cliques_s_size_8_168_steps/config.toml",
+    # "case_studies/cliques_s_size_16_168_steps/config.toml",
+    # "case_studies/cliques_s_size_4_720_steps/config.toml",
+    # "case_studies/cliques_s_size_8_720_steps/config.toml",
+    # "case_studies/cliques_s_size_16_720_steps/config.toml",
+    # "case_studies/cliques_s_size_4_2160_steps/config.toml",
+    # "case_studies/cliques_s_size_8_2160_steps/config.toml",
+    # "case_studies/cliques_s_size_16_2160_steps/config.toml",
+    # "case_studies/cliques_m_size_4_24_steps/config.toml",
+    # "case_studies/cliques_m_size_8_24_steps/config.toml",
+    # "case_studies/cliques_m_size_16_24_steps/config.toml",
+    # "case_studies/cliques_m_size_4_168_steps/config.toml",
+    # "case_studies/cliques_m_size_8_168_steps/config.toml",
+    # "case_studies/cliques_m_size_16_168_steps/config.toml",
+    # "case_studies/cliques_m_size_4_720_steps/config.toml",
+    # "case_studies/cliques_m_size_8_720_steps/config.toml",
+    # "case_studies/cliques_m_size_16_720_steps/config.toml",
+    # "case_studies/cliques_m_size_4_2160_steps/config.toml",
+    # "case_studies/cliques_m_size_8_2160_steps/config.toml",
+    "case_studies/cliques_m_size_16_2160_steps/config.toml"
     ]
-
-# "case_studies/stylized_EU/config.toml"
-# "case_studies/8_locations/config.toml"
-# "case_studies/stylized_EU_directional/config.toml"
-# "case_studies/cliques_10_5/config.toml"
 
 # Run multiple experiments
 for experiment ∈ experiments
@@ -51,7 +72,7 @@ for experiment ∈ experiments
     for run in 1:num_runs
         @info "Executing run: $run"
         time_steps = length(config[:input][:sets][:time_steps])
-        experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], config[:bound_alpha_factor], output_config, results_df, run, time_steps)
+        experiment_result = run_experiment(experiment_data, Gurobi.Optimizer, config[:line_capacities_bidirectional], config[:cluster_tree], float(config[:bound_alpha_factor]), output_config, results_df, run, time_steps)
         # Save decision outputs (get overwritten for now)
         save_result(experiment_result, output_config)
     end
