@@ -87,24 +87,24 @@ df = pd.read_csv('case_studies/stylized_eu/inputs/transmission_lines.csv')
 
 
 extra_reductions = {
-    "CombiReduce[2]" : ['BEL','IRE',['POR','SPA'],[['GER','UKI','NED','NOR','DEN'],'FRA','SWI',['BLK','ITA','AUS']],[['SKO','CZE','POL'],['FIN','BLT','SWE']]],
-    "GridReduce[2]" : [['SPA','POR','IRE',['ITA','FRA','SWI',['AUS','BLK','SKO','CZE']],['NOR','UKI',['GER','DEN','NED','BEL'],['SWE','FIN','BLT','POL']]]],
-    "CliqueReduce[2]" : [['SPA','POR','IRE',['FIN','SWE','BLT'],['BLK',['ITA','AUS','SWI'],['SKO','POL','CZE']],[['GER','UKI','NED','NOR','DEN'],'FRA','BEL']]],
-    "CliqueReduce[3]" : ['SPA','POR','IRE',[[['GER','UKI','NED','NOR','DEN'],'FRA','BEL'],['BLK',['ITA','AUS','SWI'],['SKO','POL','CZE']],['FIN','SWE','BLT']]],
+    "CombiReduce[2]" : [[['BEL']],[['IRE']],[['POR'],['SPA']],[['GER','UKI','NED','NOR','DEN'],['FRA'],['SWI'],['BLK','ITA','AUS']],[['SKO','CZE','POL'],['FIN','BLT','SWE']]],
+    "GridReduce[2]" : [[['SPA']],[['POR']],[['IRE']],[['ITA'],['FRA'],['SWI'],['AUS','BLK','SKO','CZE']],[['NOR'],['UKI'],['GER','DEN','NED','BEL'],['SWE','FIN','BLT','POL']]],
+    "CliqueReduce[2]" : [[['SPA']],[['POR']],[['IRE']],[['FIN'],['SWE'],['BLT']],[['BLK'],['ITA','AUS','SWI'],['SKO','POL','CZE']],[['GER','UKI','NED','NOR','DEN'],['FRA'],['BEL']]],
+    "CliqueReduce[3]" : [[[['SPA']]],[[['POR']]],[[['IRE']]],[[['GER','UKI','NED','NOR','DEN'],['FRA'],['BEL']],[['BLK'],['ITA','AUS','SWI'],['SKO','POL','CZE']],[['FIN'],['SWE'],['BLT']]]],
 }
 
 # configure the different reductions based on predefined clusterings
 reductions = {
-    "CombiReduce[1]" : ['SWI','BEL','FRA','IRE',['GER','UKI','NED','NOR','DEN'],['BLK','ITA','AUS'],['SKO','CZE','POL'],['FIN','BLT','SWE'],['POR','SPA']],
-    "GridReduce[1]" : ['ITA','SWI','FRA','SPA','POR','NOR','UKI','IRE',['AUS','BLK','SKO','CZE'],['GER','DEN','NED','BEL'],['SWE','FIN','BLT','POL']],
-    "CliqueReduce[1]" : ['BLK','BEL','FRA','SPA','POR','IRE',['GER','UKI','NED','NOR','DEN'],['FIN','SWE','BLT'],['ITA','AUS','SWI'],['SKO','POL','CZE']],
-    "ChainReduce[1]" : ['AUS','BLK','CZE','GER','ITA','SWI','BEL','FRA','NED','SKO','DEN','SWE','FIN','POL','NOR','UKI','IRE','BLT',['POR','SPA']],
+    "CombiReduce[1]" : [['SWI'],['BEL'],['FRA'],['IRE'],['GER','UKI','NED','NOR','DEN'],['BLK','ITA','AUS'],['SKO','CZE','POL'],['FIN','BLT','SWE'],['POR','SPA']],
+    "GridReduce[1]" : [['ITA'],['SWI'],['FRA'],['SPA'],['POR'],['NOR'],['UKI'],['IRE'],['AUS','BLK','SKO','CZE'],['GER','DEN','NED','BEL'],['SWE','FIN','BLT','POL']],
+    "CliqueReduce[1]" : [['BLK'],['BEL'],['FRA'],['SPA'],['POR'],['IRE'],['GER','UKI','NED','NOR','DEN'],['FIN','SWE','BLT'],['ITA','AUS','SWI'],['SKO','POL','CZE']],
+    "ChainReduce[1]" : [['AUS'],['BLK'],['CZE'],['GER'],['ITA'],['SWI'],['BEL'],['FRA'],['NED'],['SKO'],['DEN'],['SWE'],['FIN'],['POL'],['NOR'],['UKI'],['IRE'],['BLT'],['POR','SPA']],
 }
 
 for reduction in reductions:
     clustering = reductions[reduction]
     for t in [168, 720, 2160]:
-        for alpha in [1.0]:
+        for alpha in [0.9]: # , 0.9
             for gas_only in [True, False]:
                 name = f"EU/{reduction}_{t}_{alpha}_{'gas' if gas_only else 'all'}"
                 create_eu_case_study(name, df, clustering, t, alpha, gas_only)

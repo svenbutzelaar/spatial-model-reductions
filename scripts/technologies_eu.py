@@ -41,7 +41,7 @@ def add_generation_and_generation_availability(locations, name, time_steps, gas_
     generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
     investment_factor = time_steps / 8760
     technologies = [
-        ("Gas", f"{investment_factor * 23.33333333},0.05,250,0.75", 19/20),
+        ("Gas", f"{investment_factor * 23.33333333},0.05,250,0.75", 20/20),
     ]
     if not gas_only:
         technologies.extend([
