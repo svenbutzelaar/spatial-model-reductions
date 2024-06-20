@@ -29,6 +29,6 @@ function run_experiment(data::ExperimentData, optimizer_factory, line_capacities
         result = run_optimisation(data, optimizer_factory, line_capacities_bidirectional, nothing, 0.0, data, config, false)
     end
     objective = result.total_investment_cost + result.total_operational_cost
-    push!(results_df,  (run, false, objective, time, length(data.locations), time_steps, 0.0))
+    push!(results_df,  (run, false, objective, time, length(data.locations), time_steps, 0))
     return result
 end
