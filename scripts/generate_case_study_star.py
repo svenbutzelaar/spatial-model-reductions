@@ -1,6 +1,7 @@
-import random
 import os
+import numpy as np
 from math import log2, ceil
+from technologies import add_generation_and_generation_availability
 
 def get_clusters(locations):
     if len(locations) == 0:
@@ -17,19 +18,24 @@ def get_clusters(locations):
 
 
 def create_middle_cluster(n):
-    return 0 if n == 0 else [create_middle_cluster(n-1)]
+    return f"l{0}" if n == 0 else [create_middle_cluster(n-1)]
     
     
-def create_star_case_study(name, chain_length, degrees, time_steps):
-    folder = f'case_studies/{name}'
-    input_folder = f'{folder}/inputs'
+def create_star_case_study(name, chain_length, degrees, time_steps, alpha):
+    folder = f'case_studies/{name}/'
 
     # Create folders
     if not os.path.exists(folder):
         os.makedirs(folder)
+    path = folder + f'{time_steps}_steps/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    input_folder = path + 'inputs/'
     if not os.path.exists(input_folder):
         os.makedirs(input_folder)
-
+    
+    np.random.seed(42)
+    
     total_locations = chain_length*degrees  + 1
     chains = []
     locations = [f"l{i}" for i in range(total_locations)]
@@ -38,19 +44,18 @@ def create_star_case_study(name, chain_length, degrees, time_steps):
         chain_clusters = get_clusters(chain)
         chains.append(chain_clusters)
     assert len(chains) == degrees
-    print(chains)
     depth_chain_clusters = ceil(chain_length/2) + 1
-    print(depth_chain_clusters)
     
     clusters = [create_middle_cluster(depth_chain_clusters)]
     clusters.extend(chains)
-    print(clusters)
         
     # Demands
+    initial_demand = np.random.uniform(3000, 8000, size=total_locations)
     demands = ["location,time_step,demand"]
     for location in range(total_locations):
-        for time_step in range(time_steps):
-            demands.append(f"l{location},{time_step},100")
+        for time_step in range(1, time_steps):
+            change = change = np.random.uniform(-500, 500)
+            demands.append(f"l{location},{time_step},{initial_demand[location] + change}")
 
     with open(f'{input_folder}/demand.csv', 'w+') as f:
         f.write('\n'.join(demands) + '\n')
@@ -63,11 +68,13 @@ def create_star_case_study(name, chain_length, degrees, time_steps):
         f.write('\n'.join(generation_av) + '\n')
 
 
+    # add_generation_and_generation_availability(total_locations, name, time_steps)
+    
     # Generation
     generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
-
+    investment_factor = time_steps / 8760
     for location in range(total_locations):
-        generation.append(f"Gas,l{location},23.33333333,0.05,250,0.75")
+        generation.append(f"Gas,l{location},{investment_factor * 23.33333333},0.05,250,0.75")
 
     with open(f'{input_folder}/generation.csv', 'w+') as f:
         f.write('\n'.join(generation) + '\n')
@@ -76,11 +83,11 @@ def create_star_case_study(name, chain_length, degrees, time_steps):
     transmission_lines = ["from,to,capacity"]
     for i in range(1, total_locations, chain_length):
         transmission_lines.append(
-            f"l{0},l{i},{random.randint(1, 20) * 10}"
+            f"l{0},l{i},{np.random.uniform(500, 5000)}"
         )
         for j in range(0, chain_length-1):
             transmission_lines.append(
-                f"l{i+j},l{i+j+1},{random.randint(1, 20) * 10}"
+                f"l{i+j},l{i+j+1},{np.random.uniform(500, 5000)}"
             )            
 
     with open(f'{input_folder}/transmission_lines2.csv', 'w+') as f:
@@ -93,7 +100,7 @@ value_of_lost_load = 3.0
 relaxation = false
     """)
 
-    with open(f'{folder}/config.toml', 'w+') as f:
+    with open(f'{path}/config.toml', 'w+') as f:
         f.write(f"""[input.data]
 # input directory with the files
 dir = "inputs"
@@ -104,11 +111,14 @@ transmission_lines = "transmission_lines2.csv"
 scalars = "scalars.toml"
 line_capacities_bidirectional = false
 clusters = {clusters}
+bound_alpha_factor = {alpha}
+
 [input.sets]
-time_steps = "auto"
+time_steps = {list(range(1, time_steps))}
 locations = "auto"
 transmission_lines = "auto"
 generators = "auto"
+
 [output]
 dir = "output"
 investment = "investment.csv"
@@ -117,7 +127,12 @@ line_flow = "line_flow.csv"
 loss_of_load = "loss_of_load.csv"
 scalars = "scalars.toml"
                 """)
-    
-chain_length = 3
-degrees = 3
-create_star_case_study(f"{chain_length}_{degrees}_star", chain_length, degrees, 100)
+
+chain_lengths = [3, 5, 10]
+degrees = [10, 6, 3]
+time_steps = [24, 168, 720, 2160]
+alphas = [1.0]
+for i in range(len(chain_lengths)):
+    for j in time_steps:
+        for a in alphas:
+            create_star_case_study(f"{chain_lengths[i]}_{degrees[i]}_star_1_tech_{a}", chain_lengths[i], degrees[i], time_steps=j, alpha=a)

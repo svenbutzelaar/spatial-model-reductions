@@ -1,6 +1,7 @@
 
 import numpy as np
 import pandas as pd
+import os
 
 
 
@@ -14,7 +15,7 @@ def add_generation_and_generation_availability(n, name, time_steps):
         time_steps [int]    number of hours
     """
     
-    folder = f'case_studies/{name}'
+    folder = f'case_studies/{name}/{time_steps}_steps/'
     input_folder = f'{folder}/inputs'
 
     # Generation availability
@@ -31,7 +32,7 @@ def add_generation_and_generation_availability(n, name, time_steps):
     for tech, mean, std, p in technologies:
         add_gen_av(n, time_steps, generation_av, mean, std, tech, p, df_sun_distributions)
 
-
+    os.makedirs(input_folder, exist_ok=True)
     with open(f'{input_folder}/generation_availability.csv', 'w+') as f:
         f.write('\n'.join(generation_av) + '\n')
 
@@ -40,14 +41,14 @@ def add_generation_and_generation_availability(n, name, time_steps):
     generation = ["technology,location,investment_cost,variable_cost,unit_capacity,ramping_rate"]
     investment_factor = time_steps / 8760
     technologies = [
-        ("Coal", f"{investment_factor * 33.75},0.15,400,0.4", 4/20),
+        # ("Coal", f"{investment_factor * 33.75},0.15,400,0.4", 4/20),
         ("Gas", f"{investment_factor * 23.33333333},0.05,250,0.75", 19/20),
-        ("Lignite", f"{investment_factor * 38.75},0.1,400,0.5", 19/20),
-        ("Nuclear", f"{investment_factor * 68.66666667},0.01,1000,0.2", 9/20),
-        ("Oil", f"{investment_factor * 24.16666667},0.2,100,0.9", 10/20),
-        ("SunPV", f"{investment_factor * 24},1.00E-04,50,1.0", 20/20),
-        ("WindOff", f"{investment_factor * 88.33333333},0.005,100,1.0", 16/20),
-        ("WindOn", f"{investment_factor * 48.4},0.0025,100,1.0", 20/20),
+        # ("Lignite", f"{investment_factor * 38.75},0.1,400,0.5", 19/20),
+        # ("Nuclear", f"{investment_factor * 68.66666667},0.01,1000,0.2", 9/20),
+        # ("Oil", f"{investment_factor * 24.16666667},0.2,100,0.9", 10/20),
+        # ("SunPV", f"{investment_factor * 24},1.00E-04,50,1.0", 20/20),
+        # ("WindOff", f"{investment_factor * 88.33333333},0.005,100,1.0", 16/20),
+        # ("WindOn", f"{investment_factor * 48.4},0.0025,100,1.0", 20/20),
     ]
     for name, costs, p in technologies:
         add_technoligy(name, n, generation, costs, p)
@@ -67,7 +68,7 @@ def add_gen_av(n, time_steps, generation_av, mean, std, tech, p, df):
 
     prob = get_list_technologies_distribution(n, p)
     for i in range(n):
-        for time_step in range(1, time_steps + 1):
+        for time_step in range(1, time_steps):
             if prob[i]:
                 if tech == 'SunPV':
                     mean = df.iloc[[time_step % 24]]["mean"].item()
